@@ -1,126 +1,123 @@
-# NetSuite TypeScript SDF Project Template
+# multicard-api
 
-> **The modern foundation for high-integrity SuiteScript development.** This repository provides a pre-configured, professional-grade Developer Experience (DX) for NetSuite. It bridges the gap between traditional ERP scripting and modern software engineering by combining **TypeScript**, **SuiteCloud Development Framework (SDF)**, and **Biome** into a seamless local workflow.
+NetSuite SDF customization for the Multicenter/Multicard module. TypeScript source compiles to AMD (SuiteScript 2.1) and deploys to NetSuite. Built with pragmatic Clean Architecture (4 layers) and a 1-RESTlet-per-use-case convention.
 
-## 🚀 Key Features
+> 📖 **Operations & usage:** see the [Manual](MANUAL.md) for endpoint reference, request/response shapes, TBA authentication, the SDF object structure, and the request-driven design decision (why RESTlets use **no** script parameters).
 
-- **Compile-Time Safety:** Catch API errors and type mismatches in your IDE before they ever reach a NetSuite Sandbox.
-- **Automated DX:** Real-time linting and formatting (Biome) on save, ensuring code consistency across teams.
-- **Infrastructure as Code (IaC):** Leverage SDF to manage your NetSuite objects (Custom Records, Fields, Scripts) via XML within your Git-based workflow.
-- **Modern SuiteScript:** Native support for SuiteScript 2.1 (ES6+) features.
+## Requirements
 
-**Example Implementation:** To see this template powering a production-grade React SPA within NetSuite, see [SuiteTools](https://github.com/mattplant/SuiteTools).
+- **Node.js:** v22.x (LTS) or higher
+- **Package Manager:** [pnpm](https://pnpm.io/) v9.x
+- **Java:** Oracle JDK 21 — required for the SuiteCloud SDK
+- **SuiteCloud CLI:** `@oracle/suitecloud-cli` v3.x+ (install globally with `npm install -g @oracle/suitecloud-cli`)
+- **NetSuite Account:** "SuiteCloud Development Integration" (245955) bundle installed in the target environments
 
-## 🛠️ Requirements
+## Initial Setup
 
-To utilize this template, your local environment must meet the following enterprise standards:
+```bash
+git clone <repository-url>
+cd multicard-api
+pnpm install
+pnpm setup        # authenticates to your NetSuite account
+```
 
-- **Node.js:** v22.x (LTS) or higher.
-- **Package Manager:** [Yarn Classic](https://classic.yarnpkg.com/en/docs/install) (v1.22.x) — *Ensures deterministic builds and optimized dependency management.*
-- **Java:** Oracle JDK 21 — *Required for the SuiteCloud SDK's underlying Java-based binary operations.*
-- **SuiteCloud CLI:** `@oracle/suitecloud-cli` (v3.x+) — *Recommended to be installed globally (`npm install -g @oracle/suitecloud-cli`).*
-- **NetSuite Account:** "SuiteCloud Development Integration" (245955) bundle installed in your target NetSuite environments.
+### VS Code (recommended)
 
-## 🏗️ Initial Setup
+- **[SuiteCloud Extension](https://marketplace.visualstudio.com/items?itemName=Oracle.suitecloud-vscode-extension)** — SDF integration and account management
+- **[Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)** — real-time linting and formatting on save
 
-These steps establish your local environment and authenticate your NetSuite connection.
+## Stack
 
-### Core Configuration
+- **TypeScript source:** `src/TypeScripts/multicard-api/`
+- **Compiled output:** `src/FileCabinet/SuiteScripts/multicard-api/`
+- **Test runner:** Jest with `@oracle/suitecloud-unit-testing` stubs
+- **Linter/Formatter:** Biome
+- **Size:** ~28 TypeScript files across 4 features (`customer`, `installment`, `invoice`, `sales-order`)
 
-- **Clone the repository:**
+## Architecture
 
-  ```bash
-  git clone https://github.com/mattplant/netsuite-ts-sdf-template.git
-  cd netsuite-ts-sdf-template
-  ```
+Pragmatic Clean Architecture in 4 layers:
 
-- **Install dependencies & enable linting:**
+```
+features/<feature>/
+├── domain/          ← entities + value objects (zero NetSuite imports)
+├── usecase/         ← use cases + ports (interface IXxxRepository)
+└── repository/      ← NetSuite implementation (N/search, N/record, N/log)
 
-  ```bash
-  yarn install
-  ```
+suitescript/restlet/ ← driving adapters (HTTP entry points, composition root)
+shared/              ← cross-feature types (ApiResponse, CUSTOMER_TYPE, status codes)
+```
 
-- **Connect your NetSuite account:**
+Full architecture guide lives in the architect agent:
 
-  ```bash
-  yarn setup
-  ```
+- **Claude Code:** [`.claude/agents/architect/agent.md`](.claude/agents/architect/agent.md)
+- **Opencode:** [`.opencode/skills/architect/SKILL.md`](.opencode/skills/architect/SKILL.md)
 
-### VS Code Configuration (Recommended)
+## RESTlet Naming Convention
 
-For the intended "Zero Friction" DX, install the following extensions:
+Mandatory pattern for every RESTlet file in `suitescript/restlet/`:
 
-- **[SuiteCloud Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=Oracle.suitecloud-vscode-extension)** — Essential for SDF integration and account management.
-- **[Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)** — Provides real-time linting and formatting on save.
+```
+mc_rl_mcard_<acción>.ts
+```
 
-**Enable Automatic Tasks:**
+| Segment    | Meaning                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `mc`       | Multicenter (container project/client)                                                      |
+| `rl`       | RESTlet (NetSuite script type)                                                              |
+| `mcard`    | Multicard (functional module qualifier)                                                     |
+| `<acción>` | `verb_noun` describing the endpoint (e.g. `get_customer`, `validate_customer_for_purchase`) |
 
-To allow TypeScript to transpile in the background automatically upon folder entry:
+**Rule: 1 RESTlet per use case.** Each HTTP endpoint lives in its own file with its own composition root. No `?action=...` dispatching, no multi-action RESTlets.
 
-1. Open the Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`).
-2. Select **Tasks: Manage Automatic Tasks in Folder**.
-3. Choose **Allow Automatic Tasks in Folder**.
+**Why this pattern:**
 
-## 📚 Example: Hello World Suitelet
+- Deploys are independent — changing one endpoint does not redeploy the rest
+- Each RESTlet has its own namespace in the NetSuite Execution Log
+- URLs are self-documenting (no magic `?action=validate` param)
+- Blast radius is small — a bug in one endpoint does not affect the others
 
-This template includes a working Hello World example.
+**Current inventory:**
 
-**Files:**
+| File                                            | Use case                      | HTTP | Params                                    |
+| ----------------------------------------------- | ----------------------------- | ---- | ----------------------------------------- |
+| `mc_rl_mcard_get_customer.ts`                   | `GetCustomer`                 | GET  | `documentNumber`                          |
+| `mc_rl_mcard_get_customer_by_id.ts`             | `GetCustomerById`             | GET  | `customerId`                              |
+| `mc_rl_mcard_validate_customer_for_purchase.ts` | `ValidateCustomerForPurchase` | GET  | `documentNumber`                          |
+| `mc_rl_mcard_generate_installments.ts`          | `GenerateInstallments`        | POST | body JSON (`IInstallmentInput`)           |
+| `mc_rl_mcard_get_invoice.ts`                    | `GetInvoice`                  | GET  | `invoiceId`                               |
+| `mc_rl_mcard_get_sales_order_by_id.ts`          | `GetSalesOrderById`           | GET  | `salesOrderId`                            |
+| `mc_rl_mcard_get_sales_orders_by_document.ts`   | `GetSalesOrdersByDocument`    | GET  | `documentNumber`, `complemento?`, `page?` |
 
-- TypeScript Source: `/src/TypeScripts/idev-engineering-netsuite/idev_SL_HelloWorld.ts`
-- Compiled Output: `/src/FileCabinet/SuiteScripts/idev-engineering-netsuite/idev.js` (auto-generated)
-- Script Record: `/src/Objects/customscript_idev_sl_hello_world.xml` (includes deployment record)
+## Build & Workflow
 
-**To Test:**
+```bash
+pnpm install      # install dependencies
+pnpm build        # format TS source → tsc → inject NetSuite headers → format JS output
+pnpm test         # run Jest
+pnpm lint         # Biome check (no fixes)
+pnpm lint:fix     # Biome auto-fix (safe fixes only)
+pnpm watch        # tsc --watch (no format — use during iteration)
+pnpm run deploy   # build → suitecloud project:deploy (use `run` to avoid pnpm 9.x workspace command conflict)
+```
 
-1. Deploy the template to your NetSuite environment: `yarn deploy`
-2. Navigate to the deployed Hello World Suitelet in your NetSuite environment:
+`pnpm build` is **self-healing**. It runs `biome format` on the TS source *before* `tsc`, so any line over `lineWidth: 100` is auto-split. After `tsc` and the header-injection step, it runs `biome format` again on the compiled JS output. You rarely need to run `pnpm lint:fix` manually.
 
-   ```text
-   https://<your-account-id>.app.netsuite.com/app/site/hosting/scriptlet.nl?script=customscript_idev_sl_hello_world&deploy=customdeploy_idev_sl_hello_world
-   ```
+> **Caveat**: `pnpm watch` only runs `tsc -w`. It does **not** run the format step. If a long line slips into the source, `watch` will not catch it. Use `pnpm build` before committing.
 
-   Replace `<your-account-id>` with your NetSuite account ID.
+## Pre-deploy Gate
 
-## 💻 Usage & Workflow
+```bash
+pnpm build && pnpm test && pnpm lint
+```
 
-1. **Development:** Create your logic in `src/TypeScripts/`. The template's `tsconfig.json` is pre-configured to target SuiteScript 2.1 (ES6+) and includes the necessary type definitions for NetSuite's API.
-2. **Real-time Feedback:** The template automatically lints and formats your code as you work.
-3. **Transpilation:** TypeScript is converted to SuiteScript 2.1 (ES6+) in `src/FileCabinet/SuiteScripts/` via automated background tasks.
-4. **Deployment:** Use the SuiteCloud CLI or the VS Code sidebar to push to your NetSuite environment.
+All three must be green before `pnpm run deploy`. The build also runs as a `prebuild` hook that wipes the compiled output directory, so stale JS files from old renames never leak into a deploy.
 
-   ```bash
-    yarn deploy
-   ```
+## Acknowledgments
 
-## 📝 Technical Notes
+- **Oracle NetSuite SuiteCloud Team** — for the SuiteCloud SDK, SDF CLI, and VS Code extensions
+- **[Head in the Cloud Development](https://github.com/headintheclouddev)** — for `@hitc/netsuite-types`, which makes strict compile-time type safety a reality for SuiteScript 2.x
 
-This template was initially generated by Oracle's SuiteCloud SDK via `suitecloud project:create -i` and subsequently customized to create a zero-friction, professional-grade DX for SuiteScript development with TypeScript.
+## License
 
-## 🙌 Acknowledgments & Attribution
-
-A rising tide lifts all boats. This template would not be possible without the incredible, ongoing work of the broader NetSuite developer community. I am firmly standing on the shoulders of giants who paved the way for modern SuiteScript development.
-
-Special thanks and attribution to:
-
-- **Oracle NetSuite's SuiteCloud Team:** For the continued evolution of the SuiteCloud SDK, SDF CLI, and the VS Code extensions that make local SDLC possible.
-- **[Head in the Cloud Development](https://github.com/headintheclouddev):** For maintaining the `@hitc/netsuite-types` repository. Their work single-handedly made strict, compile-time type safety a reality for SuiteScript 2.x.
-
-## 👨‍💻 Author
-
-**Matt Plant** | *Senior NetSuite Software Engineer* *Bringing Software Engineering Rigor to the NetSuite Ecosystem.*
-
-- **GitHub:** [@mattplant](https://github.com/mattplant)
-- **Flagship Project:** [SuiteTools](https://github.com/mattplant/SuiteTools) (A React-based SPA built in TypeScript and deployed to NetSuite via SDF from a monorepo).
-
-## ⚖️ Legal Disclaimer
-
-This repository is a personal, open-source project and is **not** affiliated with, endorsed by, or sponsored by Oracle Corporation or NetSuite. "Oracle", "NetSuite", "SuiteScript", and "SuiteCloud" are registered trademarks of Oracle Corporation.
-
-The methodologies, architectural patterns, and code samples provided in this repository are for educational and demonstration purposes. Enterprise ERP environments are highly customized; therefore, you assume all risk associated with using this template. Always thoroughly test code and deployments in a NetSuite Sandbox environment prior to Production release.
-
-## 📄 License
-
-This project is licensed under the **MIT License**.
-
-You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software and architectural patterns to improve your own NetSuite environments. See the [LICENSE](LICENSE) file for the full text.
+MIT
