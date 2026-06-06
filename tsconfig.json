@@ -1,23 +1,22 @@
 {
   "compilerOptions": {
     /* Target & Environment */
-    "target": "ES2020",                      /* Best fit for SuiteScript 2.1 (ES6+) */
-    "module": "AMD",                         /* NetSuite uses AMD (define/require) */
+    "target": "ES2021" /* Best fit for SuiteScript 2.1 (ES6+) */,
+    "module": "AMD" /* NetSuite uses AMD (define/require) */,
     "moduleResolution": "Node",
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["ESNext"],
 
     /* Paths & Outputs */
-    "rootDir": "src/TypeScripts/idev-engineering-netsuite",
-    "outDir": "src/FileCabinet/SuiteScripts/idev-engineering-netsuite",
-    "baseUrl": ".",
+    "rootDir": "src/TypeScripts/multicard-api",
+    "outDir": "src/FileCabinet/SuiteScripts/multicard-api",
     "paths": {
-      "N": ["node_modules/@hitc/netsuite-types/N"],
-      "N/*": ["node_modules/@hitc/netsuite-types/N/*"]
+      "N": ["./node_modules/@hitc/netsuite-types/N"],
+      "N/*": ["./node_modules/@hitc/netsuite-types/N/*"]
     },
 
     /* The "Rigor" Guardrails */
+    "ignoreDeprecations": "5.0",
     "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
@@ -27,8 +26,13 @@
 
     /* NetSuite Compatibility */
     "skipLibCheck": true,
-    "noEmitOnError": true                    /* Don't generate JS if the TS has errors */
+    "noEmitOnError": true /* Don't generate JS if the TS has errors */
   },
-  "include": ["src/TypeScripts/idev-engineering-netsuite/**/*"],
+  "include": [
+    "src/TypeScripts/multicard-api/**/*",
+    "__test__/invoice/__tests__",
+    "__test__/installment/__tests__",
+    "__test__/customer/__tests__"
+  ],
   "exclude": ["node_modules", "src/FileCabinet"]
 }

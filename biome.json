@@ -1,9 +1,20 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
-    "include": ["**/*.{ts,json}"],
-    "ignore": ["node_modules/**", "src/FileCabinet/**"]
+    "include": ["**/*.ts", "**/*.json", "src/FileCabinet/SuiteScripts/multicard-api/**/*.js"],
+    "ignore": ["node_modules/**"]
   },
+  "overrides": [
+    {
+      "include": ["src/FileCabinet/**"],
+      "linter": { "enabled": false },
+      "organizeImports": { "enabled": false }
+    },
+    {
+      "include": ["src/TypeScripts/**"],
+      "organizeImports": { "enabled": false }
+    }
+  ],
   "organizeImports": {
     "enabled": true
   },

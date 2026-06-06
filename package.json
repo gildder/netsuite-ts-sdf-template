@@ -1,17 +1,10 @@
 {
-  "name": "netsuite-ts-sdf-template",
-  "displayName": "NetSuite TypeScript SDF Project Template",
-  "version": "2.0.3",
+  "name": "multicard-api",
+  "displayName": "NetSuite multicard Project",
+  "version": "1.0.0",
   "private": true,
-  "description": "A high-integrity foundation for TypeScript-based SuiteScript 2.1 development and deployment via SDF.",
-  "keywords": [
-    "netsuite",
-    "sdf",
-    "suitescript",
-    "typescript",
-    "dx",
-    "engineering"
-  ],
+  "description": "NetSuite TypeScript project for multicard - pequeño",
+  "keywords": ["netsuite", "sdf", "suitescript", "typescript", "dx", "engineering"],
   "author": {
     "name": "Matt Plant",
     "url": "https://github.com/mattplant"
@@ -23,19 +16,21 @@
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0",
-    "yarn": ">=1.22.0"
+    "pnpm": ">=9.0.0"
   },
-  "packageManager": "yarn@1.22.22",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "build": "tsc",
+    "clean": "node -e \"require('fs').rmSync('src/FileCabinet/SuiteScripts/multicard-api', { recursive: true, force: true })\"",
+    "prebuild": "pnpm clean",
+    "build": "biome format --write src/TypeScripts/multicard-api && tsc && node scripts/inject-headers.js && biome format --write src/FileCabinet/SuiteScripts/multicard-api",
     "watch": "tsc -w",
     "test": "jest",
     "suitecloud": "suitecloud",
     "setup": "suitecloud account:setup",
-    "deploy": "yarn build && suitecloud project:deploy"
+    "deploy": "pnpm build && suitecloud project:deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
