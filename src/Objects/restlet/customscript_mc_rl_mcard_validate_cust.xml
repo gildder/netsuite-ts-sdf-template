@@ -1,0 +1,19 @@
+<restlet scriptid="customscript_mc_rl_mcard_validate_cust">
+  <isinactive>F</isinactive>
+  <name>MC | Validar Cliente para Compra</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/multicard-api/suitescript/restlet/mc_rl_mcard_validate_customer_for_purchase.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_mc_rl_mcard_validate_cust">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>MC | Validar Cliente para Compra</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</restlet>

@@ -1,0 +1,19 @@
+<restlet scriptid="customscript_mc_rl_mcard_get_so_custdoc">
+  <isinactive>F</isinactive>
+  <name>MC | OV por Documento de Cliente</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/multicard-api/suitescript/restlet/mc_rl_mcard_get_sales_orders_by_customer_document.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_mc_rl_mcard_get_so_custdoc">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>MC | OV por Documento de Cliente</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</restlet>

@@ -3,10 +3,10 @@
         <path>~/AccountConfiguration/*</path>
     </configuration>
     <files>
-        <path>~/FileCabinet/SuiteScripts/idev-engineering-netsuite/*</path>
+        <path>~/FileCabinet/SuiteScripts/multicard-api/*</path>
     </files>
     <objects>
-        <path>~/Objects/*</path>
+        <path>~/Objects/restlet/*</path>
     </objects>
     <translationimports>
         <path>~/Translations/*</path>

@@ -1,0 +1,19 @@
+<restlet scriptid="customscript_mc_rl_mcard_generate_inst">
+  <isinactive>F</isinactive>
+  <name>MC | Generar Cuotas Multicard</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/multicard-api/suitescript/restlet/mc_rl_mcard_generate_installments.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_mc_rl_mcard_generate_inst">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>MC | Generar Cuotas Multicard</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</restlet>

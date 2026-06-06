@@ -1,0 +1,19 @@
+<restlet scriptid="customscript_mc_rl_mcard_get_cust_by_id">
+  <isinactive>F</isinactive>
+  <name>MC | Obtener Cliente por Id Multicard</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/multicard-api/suitescript/restlet/mc_rl_mcard_get_customer_by_id.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_mc_rl_mcard_get_cust_by_id">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>MC | Obtener Cliente por Id Multicard</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</restlet>
