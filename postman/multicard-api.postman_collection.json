@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "dd451dd4-57fe-48da-87db-f3c26e729ec9",
+    "_postman_id": "83c37af5-a4a0-4622-a341-e1f458b4b550",
     "name": "Multicard-API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "2243868"
@@ -82,73 +82,27 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_get_customer}}&deploy={{deploy_get_customer}}&documentNumber=20304050",
+          "raw": "{{baseUrl}}?script={{script_get_customer}}&deploy={{deploy_get_customer}}&documentNumber=7146003",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_customer}}",
-              "type": "string"
+              "value": "{{script_get_customer}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_customer}}",
-              "type": "string"
+              "value": "{{deploy_get_customer}}"
             },
             {
               "key": "documentNumber",
-              "value": "20304050",
-              "type": "string"
+              "value": "7146003"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_get_customer}}&deploy={{deploy_get_customer}}&documentNumber=20304050",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_get_customer}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_get_customer}}"
-                },
-                {
-                  "key": "documentNumber",
-                  "value": "20304050"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Obtener Cliente por Id",
@@ -226,73 +180,27 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_get_cust_by_id}}&deploy={{deploy_get_cust_by_id}}&customerId=87426",
+          "raw": "{{baseUrl}}?script={{script_get_cust_by_id}}&deploy={{deploy_get_cust_by_id}}&customerId=87426",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_cust_by_id}}",
-              "type": "string"
+              "value": "{{script_get_cust_by_id}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_cust_by_id}}",
-              "type": "string"
+              "value": "{{deploy_get_cust_by_id}}"
             },
             {
               "key": "customerId",
-              "value": "87426",
-              "type": "string"
+              "value": "87426"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_get_cust_by_id}}&deploy={{deploy_get_cust_by_id}}&customerId=12345",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_get_cust_by_id}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_get_cust_by_id}}"
-                },
-                {
-                  "key": "customerId",
-                  "value": "12345"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Obtener Factura",
@@ -370,73 +278,27 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_get_invoice}}&deploy={{deploy_get_invoice}}&invoiceId=67890",
+          "raw": "{{baseUrl}}?script={{script_get_invoice}}&deploy={{deploy_get_invoice}}&invoiceId=17258308",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_invoice}}",
-              "type": "string"
+              "value": "{{script_get_invoice}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_invoice}}",
-              "type": "string"
+              "value": "{{deploy_get_invoice}}"
             },
             {
               "key": "invoiceId",
-              "value": "67890",
-              "type": "string"
+              "value": "17258308"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_get_invoice}}&deploy={{deploy_get_invoice}}&invoiceId=67890",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_get_invoice}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_get_invoice}}"
-                },
-                {
-                  "key": "invoiceId",
-                  "value": "67890"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Obtener Resumen de OV Multicard",
@@ -514,73 +376,27 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_get_so_summary}}&deploy={{deploy_get_so_summary}}&salesOrderId=87426",
+          "raw": "{{baseUrl}}?script={{script_get_so_summary}}&deploy={{deploy_get_so_summary}}&salesOrderId=17258302",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_so_summary}}",
-              "type": "string"
+              "value": "{{script_get_so_summary}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_so_summary}}",
-              "type": "string"
+              "value": "{{deploy_get_so_summary}}"
             },
             {
               "key": "salesOrderId",
-              "value": "87426",
-              "type": "string"
+              "value": "17258302"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_get_so_summary}}&deploy={{deploy_get_so_summary}}&salesOrderId=55555",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_get_so_summary}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_get_so_summary}}"
-                },
-                {
-                  "key": "salesOrderId",
-                  "value": "55555"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Obtener OV por Documento de Cliente",
@@ -663,91 +479,36 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_get_so_custdoc}}&deploy={{deploy_get_so_custdoc}}&documentNumber=20304050&complemento=01&page=0",
+          "raw": "{{baseUrl}}?script={{script_get_so_custdoc}}&deploy={{deploy_get_so_custdoc}}&documentNumber=7146003&page=0",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_so_custdoc}}",
-              "type": "string"
+              "value": "{{script_get_so_custdoc}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_so_custdoc}}",
-              "type": "string"
+              "value": "{{deploy_get_so_custdoc}}"
             },
             {
               "key": "documentNumber",
-              "value": "20304050",
-              "type": "string"
+              "value": "7146003"
             },
             {
               "key": "complemento",
               "value": "01",
-              "type": "string"
+              "disabled": true
             },
             {
               "key": "page",
-              "value": "0",
-              "type": "string"
+              "value": "0"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_get_so_custdoc}}&deploy={{deploy_get_so_custdoc}}&documentNumber=20304050&complemento=01&page=0",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_get_so_custdoc}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_get_so_custdoc}}"
-                },
-                {
-                  "key": "documentNumber",
-                  "value": "20304050"
-                },
-                {
-                  "key": "complemento",
-                  "value": "01"
-                },
-                {
-                  "key": "page",
-                  "value": "0"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Validar Cliente para Compra",
@@ -851,47 +612,7 @@
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_validate_cust}}&deploy={{deploy_validate_cust}}&documentNumber=20304050",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_validate_cust}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_validate_cust}}"
-                },
-                {
-                  "key": "documentNumber",
-                  "value": "20304050"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     },
     {
       "name": "Generar Cuotas",
@@ -978,73 +699,23 @@
           }
         },
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_generate_inst}}&deploy={{deploy_generate_inst}}",
+          "raw": "{{baseUrl}}?script={{script_generate_inst}}&deploy={{deploy_generate_inst}}",
           "host": [
             "{{baseUrl}}"
-          ],
-          "path": [
-            ""
           ],
           "query": [
             {
               "key": "script",
-              "value": "{{script_generate_inst}}",
-              "type": "string"
+              "value": "{{script_generate_inst}}"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_generate_inst}}",
-              "type": "string"
+              "value": "{{deploy_generate_inst}}"
             }
           ]
         }
       },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"customerId\": \"12345\",\n  \"invoiceId\": \"67890\",\n  \"amount\": 100000,\n  \"nroInstallment\": 6,\n  \"paymentDay\": 10,\n  \"customerType\": \"1\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/?script={{script_generate_inst}}&deploy={{deploy_generate_inst}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ],
-              "query": [
-                {
-                  "key": "script",
-                  "value": "{{script_generate_inst}}"
-                },
-                {
-                  "key": "deploy",
-                  "value": "{{deploy_generate_inst}}"
-                }
-              ]
-            }
-          },
-          "_postman_previewlanguage": "Text",
-          "header": [],
-          "cookie": [],
-          "body": ""
-        }
-      ]
+      "response": []
     }
   ]
 }
