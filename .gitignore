@@ -66,6 +66,11 @@ project.json
 project.json.local
 .netrc
 
+# --- Postman Environments ---
+# Production env with real credentials MUST NOT be committed.
+# The SB1 (sandbox) env stays in the repo as a template (its values are sandbox-only).
+postman/multicard-api-production.postman_environment.json
+
 # --- Engineering NetSuite Drafts ---
 commit-draft.md
 
