@@ -8,6 +8,7 @@
   "item": [
     {
       "name": "Obtener Cliente",
+      "description": "Devuelve el detalle del cliente Multicard buscado por numero de documento. Requiere documentNumber.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -82,18 +83,16 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}?script={{script_get_customer}}&deploy={{deploy_get_customer}}&documentNumber=7146003",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=6624&deploy=1&documentNumber=7146003",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_customer}}"
+              "value": "6624"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_customer}}"
+              "value": "1"
             },
             {
               "key": "documentNumber",
@@ -106,6 +105,7 @@
     },
     {
       "name": "Obtener Cliente por Id",
+      "description": "Devuelve el detalle del cliente Multicard usando el id interno de NetSuite. Requiere customerId.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -180,18 +180,16 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}?script={{script_get_cust_by_id}}&deploy={{deploy_get_cust_by_id}}&customerId=87426",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=6623&deploy=1&customerId=87426",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_cust_by_id}}"
+              "value": "6623"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_cust_by_id}}"
+              "value": "1"
             },
             {
               "key": "customerId",
@@ -204,6 +202,7 @@
     },
     {
       "name": "Obtener Factura",
+      "description": "Devuelve la factura asociada a una compra Multicard. Requiere invoiceId.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -278,18 +277,16 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}?script={{script_get_invoice}}&deploy={{deploy_get_invoice}}&invoiceId=17258308",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=6625&deploy=1&invoiceId=17258308",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_invoice}}"
+              "value": "6625"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_invoice}}"
+              "value": "1"
             },
             {
               "key": "invoiceId",
@@ -301,7 +298,110 @@
       "response": []
     },
     {
+      "name": "Obtener Estado y Saldo del Cliente",
+      "description": "Devuelve si el cliente esta habilitado y su saldo disponible. Requiere documentNumber y acepta complemento opcional.",
+      "protocolProfileBehavior": {
+        "strictSSL": false,
+        "followRedirects": true
+      },
+      "request": {
+        "auth": {
+          "type": "oauth1",
+          "oauth1": [
+            {
+              "key": "in",
+              "value": "header",
+              "type": "string"
+            },
+            {
+              "key": "signatureMethod",
+              "value": "HMAC-SHA256",
+              "type": "string"
+            },
+            {
+              "key": "version",
+              "value": "1.0",
+              "type": "string"
+            },
+            {
+              "key": "addParamsToHeader",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "key": "consumerKey",
+              "value": "{{consumerKey}}",
+              "type": "string"
+            },
+            {
+              "key": "consumerSecret",
+              "value": "{{consumerSecret}}",
+              "type": "string"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            },
+            {
+              "key": "tokenSecret",
+              "value": "{{tokenSecret}}",
+              "type": "string"
+            },
+            {
+              "key": "realm",
+              "value": "{{realm}}",
+              "type": "string"
+            },
+            {
+              "key": "enableHeaderEncoding",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "key": "disableHeaderEncoding",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "string"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}?script=6824&deploy=1&documentNumber=7146003",
+          "host": ["{{baseUrl}}"],
+          "query": [
+            {
+              "key": "script",
+              "value": "6824"
+            },
+            {
+              "key": "deploy",
+              "value": "1"
+            },
+            {
+              "key": "documentNumber",
+              "value": "7146003"
+            },
+            {
+              "key": "complemento",
+              "value": "01",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Obtener Resumen de OV Multicard",
+      "description": "Devuelve el resumen completo de una transaccion Multicard: orden de venta, factura, cliente y cuotas. Requiere salesOrderId.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -376,18 +476,16 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}?script={{script_get_so_summary}}&deploy={{deploy_get_so_summary}}&salesOrderId=17258302",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=customscript_mc_rl_mcard_get_so_summary&deploy=customdeploy_mc_rl_mcard_get_so_summary&salesOrderId=17258302",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_so_summary}}"
+              "value": "customscript_mc_rl_mcard_get_so_summary"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_so_summary}}"
+              "value": "customdeploy_mc_rl_mcard_get_so_summary"
             },
             {
               "key": "salesOrderId",
@@ -400,6 +498,7 @@
     },
     {
       "name": "Obtener OV por Documento de Cliente",
+      "description": "Lista paginada de ordenes de venta Multicard para un cliente. Requiere documentNumber y acepta complemento y page opcionales.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -479,18 +578,16 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}?script={{script_get_so_custdoc}}&deploy={{deploy_get_so_custdoc}}&documentNumber=7146003&page=0",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=customscript_mc_rl_mcard_get_so_custdoc&deploy=customdeploy_mc_rl_mcard_get_so_custdoc&documentNumber=7146003&page=0",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_get_so_custdoc}}"
+              "value": "customscript_mc_rl_mcard_get_so_custdoc"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_get_so_custdoc}}"
+              "value": "customdeploy_mc_rl_mcard_get_so_custdoc"
             },
             {
               "key": "documentNumber",
@@ -512,6 +609,7 @@
     },
     {
       "name": "Validar Cliente para Compra",
+      "description": "Valida si el cliente puede comprar segun estado, mora, telefono y saldo disponible. Requiere documentNumber.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -586,22 +684,17 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/?script={{script_validate_cust}}&deploy={{deploy_validate_cust}}&documentNumber=20304050",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            ""
-          ],
+          "raw": "{{baseUrl}}?script=6628&deploy=1&documentNumber=20304050",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_validate_cust}}",
+              "value": "6628",
               "type": "string"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_validate_cust}}",
+              "value": "1",
               "type": "string"
             },
             {
@@ -616,6 +709,7 @@
     },
     {
       "name": "Generar Cuotas",
+      "description": "Genera las cuotas de una compra a partir del body JSON. Si falla una parte del proceso, revierte las cuotas creadas.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true
@@ -699,18 +793,16 @@
           }
         },
         "url": {
-          "raw": "{{baseUrl}}?script={{script_generate_inst}}&deploy={{deploy_generate_inst}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
+          "raw": "{{baseUrl}}?script=6629&deploy=1",
+          "host": ["{{baseUrl}}"],
           "query": [
             {
               "key": "script",
-              "value": "{{script_generate_inst}}"
+              "value": "6629"
             },
             {
               "key": "deploy",
-              "value": "{{deploy_generate_inst}}"
+              "value": "1"
             }
           ]
         }

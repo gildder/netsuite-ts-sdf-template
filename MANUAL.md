@@ -46,15 +46,16 @@ Datos para firmar la petición OAuth 1.0:
 
 En la carpeta [`postman/`](postman/) están los archivos listos para compartir:
 
-- `multicard-api.postman_collection.json` — los 7 RESTlets ya armados
-- `multicard-api.postman_environment.json` — variables (cuenta, credenciales, ids)
+- `multicard-api.postman_collection.json` — los 8 RESTlets ya armados, con la URL
+  completa de cada endpoint
+- `multicard-api.postman_environment.json` — variables de cuenta y credenciales OAuth
 
 Pasos:
 
 1. En Postman: **Import** → arrastrá los dos archivos.
 2. Arriba a la derecha, seleccioná el environment **Multicard API - SB1**.
 3. Editá el environment y completá: `consumerKey`, `consumerSecret`, `token`,
-   `tokenSecret`, y los `script_*` / `deploy_*` (ids numéricos de cada deployment).
+   `tokenSecret`.
 4. Ejecutá cualquier request. La auth OAuth 1.0 ya está configurada a nivel
    colección; no hay que tocar nada más.
 
@@ -76,25 +77,73 @@ Todas las respuestas son un `ApiResponse<T>` en JSON:
 
 ## 5. Referencia de endpoints
 
-| Endpoint | HTTP | Inputs |
-| --- | --- | --- |
-| Obtener Cliente | GET | `documentNumber` |
-| Obtener Cliente por Id | GET | `customerId` |
-| Obtener Factura | GET | `invoiceId` |
-| Obtener Orden de Venta por Id | GET | `salesOrderId` |
-| Obtener Órdenes de Venta por Documento | GET | `documentNumber`, `complemento?`, `page?` |
-| Validar Cliente para Compra | GET | `documentNumber` |
-| Generar Cuotas | POST | body JSON (ver abajo) |
+| Endpoint | HTTP | Inputs | Descripción |
+| --- | --- | --- | --- |
+| Obtener Cliente | GET | `documentNumber` | Devuelve el detalle del cliente Multicard buscado por número de documento. |
+| Obtener Cliente por Id | GET | `customerId` | Devuelve el detalle del cliente Multicard usando el id interno de NetSuite. |
+| Obtener Factura | GET | `invoiceId` | Devuelve la factura asociada a una compra Multicard. |
+| Obtener Estado y Saldo del Cliente | GET | `documentNumber`, `complemento?` | Devuelve si el cliente está habilitado y cuál es su saldo disponible actual. |
+| Obtener Resumen de OV Multicard | GET | `salesOrderId` | Devuelve el resumen completo de una transacción Multicard: orden de venta, factura, cliente y cuotas. |
+| Obtener OV por Documento de Cliente | GET | `documentNumber`, `complemento?`, `page?` | Lista paginada de órdenes de venta Multicard para un cliente. |
+| Validar Cliente para Compra | GET | `documentNumber` | Valida si el cliente puede comprar según estado, mora, teléfono y saldo. |
+| Generar Cuotas | POST | body JSON (ver abajo) | Genera las cuotas de una compra y revierte toda la operación si ocurre una falla parcial. |
 
 ### Ejemplos GET
 
 ```text
-?script=<id>&deploy=<id>&documentNumber=20304050
-?script=<id>&deploy=<id>&customerId=12345
-?script=<id>&deploy=<id>&invoiceId=67890
-?script=<id>&deploy=<id>&salesOrderId=55555
-?script=<id>&deploy=<id>&documentNumber=20304050&complemento=01&page=0
+?script=6624&deploy=1&documentNumber=20304050
+?script=6623&deploy=1&customerId=12345
+?script=6625&deploy=1&invoiceId=67890
+?script=6824&deploy=1&documentNumber=20304050
+?script=customscript_mc_rl_mcard_get_so_summary&deploy=customdeploy_mc_rl_mcard_get_so_summary&salesOrderId=55555
+?script=customscript_mc_rl_mcard_get_so_custdoc&deploy=customdeploy_mc_rl_mcard_get_so_custdoc&documentNumber=20304050&complemento=01&page=0
+?script=6628&deploy=1&documentNumber=20304050
 ```
+
+### GET - Obtener Estado y Saldo del Cliente
+
+Inputs:
+
+- `documentNumber` requerido
+- `complemento` opcional
+
+Respuesta exitosa típica:
+
+```json
+{
+  "success": true,
+  "data": {
+    "habilitado": "Sí",
+    "saldoDisponible": 1250
+  },
+  "message": "",
+  "error": null
+}
+```
+
+Notas:
+
+- Si el cliente tiene cuotas en mora, `habilitado` devuelve `No, con Mora`.
+- Si se envía `complemento`, debe coincidir con el del cliente encontrado.
+- El `saldoDisponible` se calcula como límite de crédito menos balance actual (`límite - balance`).
+
+### GET - Obtener Resumen de OV Multicard
+
+Inputs:
+
+- `salesOrderId` requerido
+
+Respuesta exitosa: devuelve `salesOrderID`, `invoice`, `customer` e `installments`.
+
+### GET - Obtener OV por Documento de Cliente
+
+Inputs:
+
+- `documentNumber` requerido
+- `complemento` opcional
+- `page` opcional, base 0
+
+Respuesta exitosa: devuelve `salesOrders` y `page`.
 
 ### POST — Generar Cuotas
 

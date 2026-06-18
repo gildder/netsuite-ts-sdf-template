@@ -4,8 +4,8 @@ Colección lista para probar los RESTlets de multicard-api en NetSuite.
 
 ## Archivos
 
-- `multicard-api.postman_collection.json` — los 7 RESTlets, con OAuth 1.0 (TBA) ya configurado a nivel colección.
-- `multicard-api.postman_environment.json` — variables (cuenta, credenciales, ids de script/deployment).
+- `multicard-api.postman_collection.json` — los 8 RESTlets, con OAuth 1.0 (TBA) y la URL completa de cada endpoint.
+- `multicard-api.postman_environment.json` — variables de cuenta y credenciales OAuth.
 
 ## Pasos
 
@@ -13,8 +13,18 @@ Colección lista para probar los RESTlets de multicard-api en NetSuite.
 2. Seleccioná el environment **Multicard API - SB1** (arriba a la derecha).
 3. Editá el environment y completá:
    - **Credenciales TBA** (tipo secret): `consumerKey`, `consumerSecret`, `token`, `tokenSecret`.
-   - **Ids de cada RESTlet**: `script_*` y `deploy_*` con los **ids numéricos** que muestra cada Script Deployment en NetSuite tras el deploy.
 4. Ejecutá cualquier request. La firma OAuth 1.0 se arma sola.
+
+## Qué incluye la colección
+
+- **Obtener Cliente** — consulta un cliente Multicard por número de documento.
+- **Obtener Cliente por Id** — consulta un cliente por id interno de NetSuite.
+- **Obtener Factura** — recupera la factura asociada a la compra.
+- **Obtener Estado y Saldo del Cliente** — devuelve `habilitado` y `saldoDisponible`.
+- **Obtener Resumen de OV Multicard** — devuelve orden de venta, factura, cliente y cuotas.
+- **Obtener OV por Documento de Cliente** — lista paginada de órdenes de venta Multicard.
+- **Validar Cliente para Compra** — valida si el cliente puede comprar.
+- **Generar Cuotas** — crea cuotas desde un body JSON.
 
 ## Credenciales (de dónde salen)
 
@@ -26,5 +36,6 @@ Colección lista para probar los RESTlets de multicard-api en NetSuite.
 
 - `realm` ya viene seteado en `5469654_SB1` (sandbox actual). Cambialo si usás otra cuenta.
 - `restletUrl` apunta a `5469654-sb1`. Si cambia la cuenta, actualizá `accountId` y `restletUrl`.
+- La colección ya trae los `script` y `deploy` dentro de cada request; no hace falta cargarlos en el environment.
 - Los valores de inputs en cada request (ej. `documentNumber=20304050`) son de ejemplo; reemplazalos.
 - ⚠️ No commitees el environment con credenciales reales cargadas. Compartilo vacío o usá un environment local.
