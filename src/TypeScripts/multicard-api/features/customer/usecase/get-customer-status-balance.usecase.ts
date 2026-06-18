@@ -13,8 +13,8 @@ import type { ICustomerRepository } from './ports/customer.repository.port';
 // ---------------------------------------------------------------------------
 
 export interface CustomerStatusBalanceResult {
-  habilitado: string; // 'Sí' | 'No, con Mora'
-  saldoDisponible: number;
+  enabled: string;
+  availableBalance: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -63,12 +63,12 @@ export class GetCustomerStatusBalance {
     const hasMora = this.installmentRepo.hasMora(customer.id);
 
     // Step 6: derive habilitado label
-    const habilitado = hasMora ? HABILITADO_STATUS.NO_MORA : HABILITADO_STATUS.SI;
+    const enabled = hasMora ? HABILITADO_STATUS.NO_MORA : HABILITADO_STATUS.SI;
 
     // Step 7: return success with always-present saldoDisponible
     return success<CustomerStatusBalanceResult>({
-      habilitado,
-      saldoDisponible: customer.availableBalance,
+      enabled,
+      availableBalance: customer.availableBalance,
     });
   }
 }

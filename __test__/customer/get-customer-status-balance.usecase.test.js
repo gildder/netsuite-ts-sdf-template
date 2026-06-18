@@ -103,11 +103,11 @@ describe('GetCustomerStatusBalance — complemento mismatch', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Test: no mora + complemento absent → success habilitado Sí  (T-04)
+// Test: no mora + complemento absent → success enabled Sí  (T-04)
 // ---------------------------------------------------------------------------
 
 describe('GetCustomerStatusBalance — enabled, no mora, complemento absent', () => {
-  it('returns success with habilitado Sí when customer has no mora and complemento is absent', () => {
+  it('returns success with enabled Sí when customer has no mora and complemento is absent', () => {
     const customer = makeCustomer({ availableBalance: 500, complemento: 'X' });
     const customerRepo = makeFakeCustomerRepo({ findByDocumentNumber: () => customer });
     const installmentRepo = makeFakeInstallmentRepo({ hasMora: () => false });
@@ -118,17 +118,17 @@ describe('GetCustomerStatusBalance — enabled, no mora, complemento absent', ()
     expect(result.success).toBe(true);
     expect(result.message).toBe('');
     expect(result.data).not.toBeNull();
-    expect(result.data.habilitado).toBe('Sí');
-    expect(result.data.saldoDisponible).toBe(500);
+    expect(result.data.enabled).toBe('Sí');
+    expect(result.data.availableBalance).toBe(500);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Test: has mora + complemento matches → success habilitado No, con Mora  (T-05)
+// Test: has mora + complemento matches → success enabled No, con Mora  (T-05)
 // ---------------------------------------------------------------------------
 
 describe('GetCustomerStatusBalance — disabled, has mora, complemento matches', () => {
-  it('returns success with habilitado No con Mora when customer has mora and complemento matches', () => {
+  it('returns success with enabled No con Mora when customer has mora and complemento matches', () => {
     const customer = makeCustomer({ availableBalance: -50, complemento: 'AB' });
     const customerRepo = makeFakeCustomerRepo({ findByDocumentNumber: () => customer });
     const installmentRepo = makeFakeInstallmentRepo({ hasMora: () => true });
@@ -138,8 +138,8 @@ describe('GetCustomerStatusBalance — disabled, has mora, complemento matches',
 
     expect(result.success).toBe(true);
     expect(result.data).not.toBeNull();
-    expect(result.data.habilitado).toBe('No, con Mora');
-    expect(result.data.saldoDisponible).toBe(-50);
+    expect(result.data.enabled).toBe('No, con Mora');
+    expect(result.data.availableBalance).toBe(-50);
   });
 });
 

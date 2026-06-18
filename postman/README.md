@@ -20,7 +20,7 @@ Colección lista para probar los RESTlets de multicard-api en NetSuite.
 - **Obtener Cliente** — consulta un cliente Multicard por número de documento.
 - **Obtener Cliente por Id** — consulta un cliente por id interno de NetSuite.
 - **Obtener Factura** — recupera la factura asociada a la compra.
-- **Obtener Estado y Saldo del Cliente** — devuelve `habilitado` y `saldoDisponible`.
+- **Obtener Estado y Saldo del Cliente** — devuelve `enabled` y `availableBalance`.
 - **Obtener Resumen de OV Multicard** — devuelve orden de venta, factura, cliente y cuotas.
 - **Obtener OV por Documento de Cliente** — lista paginada de órdenes de venta Multicard.
 - **Validar Cliente para Compra** — valida si el cliente puede comprar.

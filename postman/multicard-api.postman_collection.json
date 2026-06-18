@@ -299,7 +299,7 @@
     },
     {
       "name": "Obtener Estado y Saldo del Cliente",
-      "description": "Devuelve si el cliente esta habilitado y su saldo disponible. Requiere documentNumber y acepta complemento opcional.",
+      "description": "Devuelve si el cliente esta habilitado y su saldo disponible. La respuesta usa las claves enabled y availableBalance. Requiere documentNumber y acepta complemento opcional.",
       "protocolProfileBehavior": {
         "strictSSL": false,
         "followRedirects": true

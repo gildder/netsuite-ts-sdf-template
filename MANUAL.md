@@ -113,8 +113,8 @@ Respuesta exitosa típica:
 {
   "success": true,
   "data": {
-    "habilitado": "Sí",
-    "saldoDisponible": 1250
+    "enabled": "Sí",
+    "availableBalance": 1250
   },
   "message": "",
   "error": null
@@ -123,7 +123,7 @@ Respuesta exitosa típica:
 
 Notas:
 
-- Si el cliente tiene cuotas en mora, `habilitado` devuelve `No, con Mora`.
+- Si el cliente tiene cuotas en mora, `enabled` devuelve `No, con Mora`.
 - Si se envía `complemento`, debe coincidir con el del cliente encontrado.
 - El `saldoDisponible` se calcula como límite de crédito menos balance actual (`límite - balance`).
 
