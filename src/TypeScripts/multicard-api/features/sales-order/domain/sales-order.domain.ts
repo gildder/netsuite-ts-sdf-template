@@ -14,6 +14,7 @@ export interface SalesOrder {
   location: string;
   trandate: string;
   total: number;
+  financedAmount: number;
 }
 
 export interface SalesOrderSearchCriteria {

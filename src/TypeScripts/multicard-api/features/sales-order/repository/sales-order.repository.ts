@@ -38,14 +38,15 @@ const toNumber = (raw: unknown): number => {
 // search.create().run().getRange() devuelve search.Result; se lee con
 // getValue/getText. (No es lo mismo que search.lookupFields, que devuelve
 // un objeto con arrays anidados tipo { internalid: [{ value: 'x' }] }.)
-const toSalesOrder = (r: search.Result): SalesOrder => {
+const toSalesOrder = (result: search.Result): SalesOrder => {
   return {
-    id: (r.getValue(FIELDS.INTERNAL_ID) as string) ?? '',
-    tranId: (r.getValue(FIELDS.TRAN_ID) as string) ?? '',
-    entity: (r.getValue(FIELDS.ENTITY) as string) ?? '',
-    location: (r.getText(FIELDS.LOCATION) as string) ?? '',
-    trandate: (r.getValue(FIELDS.TRAN_DATE) as string) ?? '',
-    total: toNumber(r.getValue(FIELDS.TOTAL)),
+    id: result.getValue(FIELDS.INTERNAL_ID) as string,
+    tranId: result.getValue(FIELDS.TRAN_ID) as string,
+    entity: result.getText(FIELDS.ENTITY) as string,
+    location: result.getText(FIELDS.LOCATION) as string,
+    trandate: result.getValue(FIELDS.TRAN_DATE) as string,
+    total: toNumber(result.getValue(FIELDS.TOTAL)),
+    financedAmount: 0,
   };
 };
 
@@ -72,11 +73,18 @@ export class NetSuiteSalesOrderRepository implements ISalesOrderRepository {
       const start = criteria.page * SALES_ORDERS_PAGE_SIZE;
       const end = start + SALES_ORDERS_PAGE_SIZE;
 
+      const columns = Object.values(FIELDS).map((field) => {
+        if (field === FIELDS.TRAN_DATE) {
+          return search.createColumn({ name: field, sort: search.Sort.DESC });
+        }
+        return field;
+      });
+
       const results = search
         .create({
           type: record.Type.SALES_ORDER,
           filters: filters as unknown as search.Filter[],
-          columns: Object.values(FIELDS),
+          columns: columns as unknown as search.Column[],
         })
         .run()
         .getRange({ start, end });

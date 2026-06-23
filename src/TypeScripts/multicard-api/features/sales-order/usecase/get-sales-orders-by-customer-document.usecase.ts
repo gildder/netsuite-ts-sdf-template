@@ -45,8 +45,9 @@ export class GetSalesOrdersByCustomerDocument {
       return success<SalesOrderSearchResult>({ salesOrders: [], page });
     }
 
-    // 3. Filtrar las OVs que tienen compras Multicard
-    const soIds = this.multicardFilter.findSalesOrderIdsByCustomer(customer.id);
+    // 3. Obtener los IDs de las OVs que tienen compras Multicard (y su monto financiado)
+    const soMap = this.multicardFilter.findSalesOrderIdsByCustomer(customer.id);
+    const soIds = Array.from(soMap.keys());
 
     // 4. Buscar las OVs filtradas
     const salesOrders = this.salesOrderRepo.findByCriteria(
@@ -57,6 +58,13 @@ export class GetSalesOrdersByCustomerDocument {
       soIds,
     );
 
-    return success<SalesOrderSearchResult>({ salesOrders, page });
+    // 5. Inyectar el financedAmount al resultado
+    const finalSalesOrders = salesOrders.map((so) => ({
+      ...so,
+      financedAmount: soMap.get(so.id) ?? 0,
+    }));
+
+    // 6. Retornar el listado paginado
+    return success<SalesOrderSearchResult>({ salesOrders: finalSalesOrders, page });
   }
 }

@@ -20,21 +20,18 @@ export class NetSuiteMulticardSalesOrderFilter implements IMulticardSalesOrderFi
     private readonly invoiceRepo: IInvoiceRepository,
   ) {}
 
-  findSalesOrderIdsByCustomer(customerId: string): string[] {
+  findSalesOrderIdsByCustomer(customerId: string): Map<string, number> {
     try {
-      // Paso 1: cuotas del cliente → invoiceIds únicos
       const invoiceIds = this.installmentRepo.findInvoiceIdsByCustomer(customerId);
-      if (invoiceIds.length === 0) return [];
+      if (invoiceIds.length === 0) return new Map();
 
-      // Paso 2: facturas → SO ids únicos (vía createdfrom)
-      const soIds = this.invoiceRepo.findSalesOrderIdsByIds(invoiceIds);
-      return soIds;
+      return this.invoiceRepo.findSalesOrderMapByIds(invoiceIds);
     } catch (err) {
       log.error({
         title: `NetSuiteMulticardSalesOrderFilter.findSalesOrderIdsByCustomer customerId: ${customerId}`,
         details: (err as Error).message,
       });
-      return [];
+      return new Map();
     }
   }
 }

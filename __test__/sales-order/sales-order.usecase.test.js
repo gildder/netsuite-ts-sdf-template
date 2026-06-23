@@ -18,7 +18,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     findByDocumentNumber: jest.fn().mockReturnValue(null),
   };
   const fakeMulticardFilter = {
-    findSalesOrderIdsByCustomer: jest.fn().mockReturnValue([]),
+    findSalesOrderIdsByCustomer: jest.fn().mockReturnValue(new Map()),
   };
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('returns empty array when customer has no Multicard purchases', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue([]);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(new Map());
     const usecase = new GetSalesOrdersByCustomerDocument(
       fakeSalesOrderRepo,
       fakeCustomerRepo,
@@ -79,7 +79,9 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('clamps negative pages to 0', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(['100']);
+    const map = new Map();
+    map.set('100', 1500);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
     const usecase = new GetSalesOrdersByCustomerDocument(
       fakeSalesOrderRepo,
       fakeCustomerRepo,
@@ -94,7 +96,10 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('forwards multicard soIds to findByCriteria without complemento', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '1' });
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(['100', '101']);
+    const map = new Map();
+    map.set('100', 1500);
+    map.set('101', 2000);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
     const usecase = new GetSalesOrdersByCustomerDocument(
       fakeSalesOrderRepo,
       fakeCustomerRepo,
@@ -124,7 +129,9 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('skips complemento validation when input complemento is empty', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '01' });
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(['100']);
+    const map = new Map();
+    map.set('100', 1500);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
     const usecase = new GetSalesOrdersByCustomerDocument(
       fakeSalesOrderRepo,
       fakeCustomerRepo,

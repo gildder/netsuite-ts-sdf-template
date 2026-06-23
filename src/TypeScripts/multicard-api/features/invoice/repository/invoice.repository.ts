@@ -29,6 +29,7 @@ const FIELDS = {
   EMAIL: 'email',
   TOTAL: 'total',
   CREATED_FROM: 'createdfrom',
+  MONTO_FINANCIADO: 'custbody_mc_monto_financiado',
 } as const;
 
 // Shape of the object returned by search.lookupFields for an invoice.
@@ -147,6 +148,41 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
         details: (err as Error).message,
       });
       return [];
+    }
+  }
+
+  /**
+   * Devuelve un mapa de salesOrderId a financedAmount, leyendo
+   * createdfrom y custbody_mc_monto_financiado de las facturas dadas.
+   */
+  findSalesOrderMapByIds(invoiceIds: string[]): Map<string, number> {
+    if (!invoiceIds || invoiceIds.length === 0) return new Map();
+    try {
+      const results = search
+        .create({
+          type: record.Type.INVOICE,
+          filters: [[FIELDS.INTERNAL_ID, 'anyof', invoiceIds]] as unknown as search.Filter[],
+          columns: [FIELDS.CREATED_FROM, FIELDS.MONTO_FINANCIADO],
+        })
+        .run()
+        .getRange({ start: 0, end: 1000 });
+
+      const map = new Map<string, number>();
+      for (const r of results) {
+        const soId = r.getValue(FIELDS.CREATED_FROM) as string;
+        if (soId && !map.has(soId)) {
+          const amountRaw = r.getValue(FIELDS.MONTO_FINANCIADO);
+          const amount = Number.parseFloat(amountRaw as string);
+          map.set(soId, Number.isFinite(amount) ? amount : 0);
+        }
+      }
+      return map;
+    } catch (err) {
+      log.error({
+        title: 'NetSuiteInvoiceRepository.findSalesOrderMapByIds',
+        details: (err as Error).message,
+      });
+      return new Map();
     }
   }
 }

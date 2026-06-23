@@ -13,5 +13,5 @@ export interface IMulticardSalesOrderFilter {
    * siguiendo la cadena: customerId → installments → invoiceIds → invoices → createdfrom (SO ids).
    * Devuelve un array vacío si el cliente no tiene cuotas.
    */
-  findSalesOrderIdsByCustomer(customerId: string): string[];
+  findSalesOrderIdsByCustomer(customerId: string): Map<string, number>;
 }
