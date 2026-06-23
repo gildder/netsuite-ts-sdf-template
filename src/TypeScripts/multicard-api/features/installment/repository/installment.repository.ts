@@ -189,7 +189,13 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
             'AND',
             [FIELDS.IS_INACTIVE, 'is', 'F'],
           ] as unknown as search.Filter[],
-          columns: [FIELDS.INTERNAL_ID, FIELDS.NUM, FIELDS.FECHA_PAGO, FIELDS.TOTAL_TOTAL],
+          columns: [
+            FIELDS.INTERNAL_ID,
+            FIELDS.NUM,
+            FIELDS.FECHA_PAGO,
+            FIELDS.TOTAL_TOTAL,
+            FIELDS.MONTO_FINANC,
+          ],
         })
         .run()
         .getRange({ start: 0, end: 1000 });
@@ -199,6 +205,7 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
         nro: toNumber(r.getValue(FIELDS.NUM)),
         paymentDate: (r.getValue(FIELDS.FECHA_PAGO) as string) ?? '',
         total: toNumber(r.getValue(FIELDS.TOTAL_TOTAL)),
+        financedAmount: toNumber(r.getValue(FIELDS.MONTO_FINANC)),
       }));
     } catch (err) {
       log.error({

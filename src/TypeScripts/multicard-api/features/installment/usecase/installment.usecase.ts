@@ -32,6 +32,7 @@ export interface InstallmentSummaryResult {
   nro: number;
   paymentDate: string;
   total: number;
+  financedAmount: number;
 }
 
 export interface IInstallmentRepository {
