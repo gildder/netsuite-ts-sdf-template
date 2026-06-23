@@ -13,7 +13,9 @@ export interface IInvoiceRepository {
   findById(invoiceId: string): Invoice | null;
   findBySalesOrderId(salesOrderId: string): Invoice | null;
   findSalesOrderIdsByIds(invoiceIds: string[]): string[];
-  findSalesOrderMapByIds(invoiceIds: string[]): Map<string, number>;
+  findSalesOrderMapByIds(
+    invoiceIds: string[],
+  ): Map<string, { financedAmount: number; invoiceId: string }>;
 }
 
 // --- Salidas ---

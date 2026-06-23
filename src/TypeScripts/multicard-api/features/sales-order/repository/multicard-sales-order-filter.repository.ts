@@ -25,7 +25,20 @@ export class NetSuiteMulticardSalesOrderFilter implements IMulticardSalesOrderFi
       const invoiceIds = this.installmentRepo.findInvoiceIdsByCustomer(customerId);
       if (invoiceIds.length === 0) return new Map();
 
-      return this.invoiceRepo.findSalesOrderMapByIds(invoiceIds);
+      const invoiceMap = this.invoiceRepo.findSalesOrderMapByIds(invoiceIds);
+      const finalMap = new Map<string, number>();
+
+      for (const [soId, details] of invoiceMap.entries()) {
+        if (details.financedAmount > 0) {
+          finalMap.set(soId, details.financedAmount);
+        } else {
+          // Fallback to installment
+          const amount = this.installmentRepo.findFinancedAmountByInvoiceId(details.invoiceId);
+          finalMap.set(soId, amount);
+        }
+      }
+
+      return finalMap;
     } catch (err) {
       log.error({
         title: `NetSuiteMulticardSalesOrderFilter.findSalesOrderIdsByCustomer customerId: ${customerId}`,

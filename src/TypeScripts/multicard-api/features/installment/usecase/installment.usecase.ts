@@ -41,6 +41,7 @@ export interface IInstallmentRepository {
   delete(id: string): void;
   findInvoiceIdsByCustomer(customerId: string): string[];
   findInstallmentsByInvoiceId(invoiceId: string): InstallmentSummaryResult[];
+  findFinancedAmountByInvoiceId(invoiceId: string): number;
 }
 
 // Re-export domain input/result types for convenience

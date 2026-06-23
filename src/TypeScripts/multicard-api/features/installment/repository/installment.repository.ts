@@ -215,4 +215,35 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
       return [];
     }
   }
+
+  /**
+   * Obtiene el monto financiado de cualquiera de las cuotas asociadas a una factura.
+   */
+  findFinancedAmountByInvoiceId(invoiceId: string): number {
+    try {
+      const results = search
+        .create({
+          type: RECORD_INSTALLMENT,
+          filters: [
+            [FIELDS.FACTURA, 'is', invoiceId],
+            'AND',
+            [FIELDS.IS_INACTIVE, 'is', 'F'],
+          ] as unknown as search.Filter[],
+          columns: [FIELDS.MONTO_FINANC],
+        })
+        .run()
+        .getRange({ start: 0, end: 1 });
+
+      if (results && results.length > 0) {
+        return toNumber(results[0].getValue(FIELDS.MONTO_FINANC));
+      }
+      return 0;
+    } catch (err) {
+      log.error({
+        title: `NetSuiteInstallmentRepository.findFinancedAmountByInvoiceId invoiceId: ${invoiceId}`,
+        details: (err as Error).message,
+      });
+      return 0;
+    }
+  }
 }
