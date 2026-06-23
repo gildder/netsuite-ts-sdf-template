@@ -31,7 +31,7 @@ export const get: EntryPoints.RESTlet.get = (requestParams) => {
   });
 
   const params = (requestParams ?? {}) as Record<string, string>;
-  const { documentNumber, complemento, page } = params;
+  const { documentNumber, complemento, page, pageSize } = params;
 
   if (!documentNumber || documentNumber.trim() === '') {
     return JSON.stringify(failure('documentNumber es requerido.'));
@@ -39,6 +39,7 @@ export const get: EntryPoints.RESTlet.get = (requestParams) => {
 
   // page es 0-based: page=0 → primera página, page=1 → segunda, etc.
   const parsedPage = Number.parseInt(page ?? '0', 10);
+  const parsedPageSize = pageSize ? Number.parseInt(pageSize, 10) : undefined;
 
   const useCase = new GetSalesOrdersByCustomerDocument(
     salesOrderRepo,
@@ -50,6 +51,7 @@ export const get: EntryPoints.RESTlet.get = (requestParams) => {
       documentNumber,
       complemento,
       page: Number.isFinite(parsedPage) ? parsedPage : 0,
+      pageSize: Number.isFinite(parsedPageSize) ? parsedPageSize : undefined,
     }),
   );
 };

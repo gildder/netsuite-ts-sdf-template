@@ -108,7 +108,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     usecase.execute({ documentNumber: '1234567', complemento: '1' });
     // El complemento se valida contra el customer, no se pasa a findByCriteria
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
-      { documentNumber: '1234567', page: 0 },
+      { documentNumber: '1234567', page: 0, pageSize: 10 },
       ['100', '101'],
     );
   });
@@ -140,6 +140,40 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     const result = usecase.execute({ documentNumber: '1234567' });
     expect(result.data.salesOrders).toEqual([]);
     expect(fakeMulticardFilter.findSalesOrderIdsByCustomer).toHaveBeenCalled();
+  });
+
+  it('uses default pageSize of 10 if none provided', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    const map = new Map();
+    map.set('100', 1500);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
+    const usecase = new GetSalesOrdersByCustomerDocument(
+      fakeSalesOrderRepo,
+      fakeCustomerRepo,
+      fakeMulticardFilter,
+    );
+    usecase.execute({ documentNumber: '1234567' });
+    expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
+      { documentNumber: '1234567', page: 0, pageSize: 10 },
+      ['100'],
+    );
+  });
+
+  it('allows custom pageSize', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    const map = new Map();
+    map.set('100', 1500);
+    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
+    const usecase = new GetSalesOrdersByCustomerDocument(
+      fakeSalesOrderRepo,
+      fakeCustomerRepo,
+      fakeMulticardFilter,
+    );
+    usecase.execute({ documentNumber: '1234567', pageSize: 25 });
+    expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
+      { documentNumber: '1234567', page: 0, pageSize: 25 },
+      ['100'],
+    );
   });
 });
 

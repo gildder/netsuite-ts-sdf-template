@@ -5,7 +5,7 @@
  * Capa de dominio — sales-order. Tipos puros. CERO imports de NetSuite.
  */
 
-export const SALES_ORDERS_PAGE_SIZE = 100 as const;
+export const SALES_ORDERS_PAGE_SIZE = 10 as const;
 
 export interface SalesOrder {
   id: string;
@@ -20,6 +20,7 @@ export interface SalesOrder {
 export interface SalesOrderSearchCriteria {
   documentNumber: string;
   page: number;
+  pageSize: number;
 }
 
 export interface SalesOrderSearchResult {

@@ -7,7 +7,7 @@
  */
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
-import type { SalesOrderSearchResult } from '../domain/sales-order.domain';
+import { SALES_ORDERS_PAGE_SIZE, type SalesOrderSearchResult } from '../domain/sales-order.domain';
 import type { IMulticardSalesOrderFilter } from './ports/multicard-sales-order-filter.port';
 import type { ISalesOrderRepository } from './ports/sales-order.repository.port';
 
@@ -15,6 +15,7 @@ interface GetSalesOrdersByCustomerDocumentInput {
   documentNumber: string;
   complemento?: string;
   page?: number;
+  pageSize?: number;
 }
 
 export class GetSalesOrdersByCustomerDocument {
@@ -31,6 +32,8 @@ export class GetSalesOrdersByCustomerDocument {
     }
 
     const page = Math.max(0, Math.floor(input.page ?? 0));
+    const pageSizeInput = input.pageSize !== undefined ? Math.floor(input.pageSize) : 0;
+    const pageSize = pageSizeInput > 0 ? pageSizeInput : SALES_ORDERS_PAGE_SIZE;
 
     // 1. Buscar el cliente por número de documento
     const customer = this.customerRepo.findByDocumentNumber(documentNumber);
@@ -54,6 +57,7 @@ export class GetSalesOrdersByCustomerDocument {
       {
         documentNumber,
         page,
+        pageSize,
       },
       soIds,
     );

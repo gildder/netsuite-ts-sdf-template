@@ -10,11 +10,7 @@
 import * as log from 'N/log';
 import * as record from 'N/record';
 import * as search from 'N/search';
-import {
-  SALES_ORDERS_PAGE_SIZE,
-  type SalesOrder,
-  type SalesOrderSearchCriteria,
-} from '../domain/sales-order.domain';
+import { type SalesOrder, type SalesOrderSearchCriteria } from '../domain/sales-order.domain';
 import type { ISalesOrderRepository } from '../usecase/ports/sales-order.repository.port';
 
 // --- Identificadores NetSuite (sales-order) ---
@@ -70,8 +66,8 @@ export class NetSuiteSalesOrderRepository implements ISalesOrderRepository {
         filters.push([FIELDS.INTERNAL_ID, 'anyof', soIds]);
       }
 
-      const start = criteria.page * SALES_ORDERS_PAGE_SIZE;
-      const end = start + SALES_ORDERS_PAGE_SIZE;
+      const start = criteria.page * criteria.pageSize;
+      const end = start + criteria.pageSize;
 
       const columns = Object.values(FIELDS).map((field) => {
         if (field === FIELDS.TRAN_DATE) {
