@@ -139,6 +139,10 @@ export class Customer {
     return this.props.availableBalance > 0;
   }
 
+  hasMulticard(): boolean {
+    return this.props.contractSigned && this.props.insuranceSigned;
+  }
+
   belongsToSubsidiary(subsidiaryId: number): boolean {
     return this.props.subsidiary === subsidiaryId;
   }

@@ -15,6 +15,7 @@ import type { ICustomerRepository } from './ports/customer.repository.port';
 export interface CustomerStatusBalanceResult {
   enabled: string;
   availableBalance: number;
+  balance: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -24,6 +25,7 @@ export interface CustomerStatusBalanceResult {
 const HABILITADO_STATUS = {
   SI: 'Sí',
   NO_MORA: 'No, con Mora',
+  NO_MULTICARD: 'No, sin Multicard',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -59,16 +61,26 @@ export class GetCustomerStatusBalance {
       return failure('No se encontró el cliente.');
     }
 
-    // Step 5: check mora status
+    // Step 5: Multicard eligibility guard — both signature flags must be true
+    if (!customer.hasMulticard()) {
+      return success<CustomerStatusBalanceResult>({
+        enabled: HABILITADO_STATUS.NO_MULTICARD,
+        availableBalance: 0,
+        balance: 0,
+      });
+    }
+
+    // Step 6: check mora status
     const hasMora = this.installmentRepo.hasMora(customer.id);
 
-    // Step 6: derive habilitado label
+    // Step 7: derive habilitado label
     const enabled = hasMora ? HABILITADO_STATUS.NO_MORA : HABILITADO_STATUS.SI;
 
-    // Step 7: return success with always-present saldoDisponible
+    // Step 8: return success with always-present saldoDisponible and balance
     return success<CustomerStatusBalanceResult>({
       enabled,
       availableBalance: customer.availableBalance,
+      balance: customer.balance,
     });
   }
 }
