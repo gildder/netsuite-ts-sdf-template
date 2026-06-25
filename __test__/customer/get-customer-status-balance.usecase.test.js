@@ -21,7 +21,7 @@ function makeCustomer(overrides = {}) {
     id: 'cust-001',
     documentNumber: '12345678',
     availableBalance: 500,
-    balance: 1000,
+    creditLimit: 1000,
     complemento: '',
     hasMulticard: () => true,
     ...overrides,
@@ -103,7 +103,7 @@ describe('GetCustomerStatusBalance — no Multicard', () => {
     expect(result.data).not.toBeNull();
     expect(result.data.enabled).toBe('No, sin Multicard');
     expect(result.data.availableBalance).toBe(0);
-    expect(result.data.balance).toBe(0);
+    expect(result.data.creditLimit).toBe(0);
     expect(hasMoraCalls).toHaveLength(0);
   });
 });
@@ -140,7 +140,7 @@ describe('GetCustomerStatusBalance — complemento mismatch', () => {
 
 describe('GetCustomerStatusBalance — enabled, no mora, complemento absent', () => {
   it('returns success with enabled Sí when customer has no mora and complemento is absent', () => {
-    const customer = makeCustomer({ availableBalance: 500, balance: 1200, complemento: 'X' });
+    const customer = makeCustomer({ availableBalance: 500, creditLimit: 1200, complemento: 'X' });
     const customerRepo = makeFakeCustomerRepo({ findByDocumentNumber: () => customer });
     const installmentRepo = makeFakeInstallmentRepo({ hasMora: () => false });
 
@@ -152,7 +152,7 @@ describe('GetCustomerStatusBalance — enabled, no mora, complemento absent', ()
     expect(result.data).not.toBeNull();
     expect(result.data.enabled).toBe('Sí');
     expect(result.data.availableBalance).toBe(500);
-    expect(result.data.balance).toBe(1200);
+    expect(result.data.creditLimit).toBe(1200);
   });
 });
 
@@ -162,7 +162,7 @@ describe('GetCustomerStatusBalance — enabled, no mora, complemento absent', ()
 
 describe('GetCustomerStatusBalance — disabled, has mora, complemento matches', () => {
   it('returns success with enabled No con Mora when customer has mora and complemento matches', () => {
-    const customer = makeCustomer({ availableBalance: -50, balance: 880, complemento: 'AB' });
+    const customer = makeCustomer({ availableBalance: -50, creditLimit: 880, complemento: 'AB' });
     const customerRepo = makeFakeCustomerRepo({ findByDocumentNumber: () => customer });
     const installmentRepo = makeFakeInstallmentRepo({ hasMora: () => true });
 
@@ -173,7 +173,7 @@ describe('GetCustomerStatusBalance — disabled, has mora, complemento matches',
     expect(result.data).not.toBeNull();
     expect(result.data.enabled).toBe('No, con Mora');
     expect(result.data.availableBalance).toBe(-50);
-    expect(result.data.balance).toBe(880);
+    expect(result.data.creditLimit).toBe(880);
   });
 });
 

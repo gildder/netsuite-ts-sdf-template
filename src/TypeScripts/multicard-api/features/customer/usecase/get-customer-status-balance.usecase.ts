@@ -15,7 +15,7 @@ import type { ICustomerRepository } from './ports/customer.repository.port';
 export interface CustomerStatusBalanceResult {
   enabled: string;
   availableBalance: number;
-  balance: number;
+  creditLimit: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ export class GetCustomerStatusBalance {
       return success<CustomerStatusBalanceResult>({
         enabled: HABILITADO_STATUS.NO_MULTICARD,
         availableBalance: 0,
-        balance: 0,
+        creditLimit: 0,
       });
     }
 
@@ -80,7 +80,7 @@ export class GetCustomerStatusBalance {
     return success<CustomerStatusBalanceResult>({
       enabled,
       availableBalance: customer.availableBalance,
-      balance: customer.balance,
+      creditLimit: customer.creditLimit,
     });
   }
 }
