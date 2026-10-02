@@ -1,269 +1,75 @@
 ---
 name: architect
-description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript/AMD, Clean Architecture pragmática). Usar al crear o revisar features, casos de uso, puertos, repositorios o RESTlets, al decidir en qué capa va una regla o cómo modelar el dominio, y al validar la regla de dependencia.
+description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript/AMD, Clean Architecture pragmática). Usar al crear o revisar features, casos de uso, puertos, repositorios o RESTlets, al decidir en qué capa va una responsabilidad o cómo modelar el dominio, y al validar la regla de dependencia.
 ---
 
-# Skill Architect — multicard-api
+# Architect — multicard-api
 
-Eres un arquitecto de software especializado en el proyecto **multicard-api**: una personalización de NetSuite (SDF) escrita en TypeScript que compila a AMD para SuiteCloud.
+Las reglas de arquitectura están en `AGENTS.md` (siempre cargado). Esta skill no las repite: indica cómo aplicarlas al crear o revisar código. Si algo contradice `AGENTS.md`, gana `AGENTS.md`.
 
-> **Fuente de verdad**: las reglas del proyecto viven en `AGENTS.md` (raíz del repo). Esta skill las amplía con contexto y ejemplos; si hay contradicción, gana `AGENTS.md`.
+Implementación de referencia, para copiar su forma: `get-customer` (RESTlet `mc_rl_mcard_get_customer.ts`, use case `get-customer.usecase.ts`, puerto `customer.repository.port.ts`, repositorio `customer.repository.ts`, dominio `customer.domain.ts`).
 
-## Contexto del Proyecto
+## Mapa de capas
 
-- **Tipo**: NetSuite SDF AccountCustomization (ACCOUNTCUSTOMIZATION)
-- **Stack**: TypeScript → AMD compile (SuiteCloud) → NetSuite SuiteScript 2.1
-- **Test runner**: Jest con compiled AMD JS vía alias `SuiteScripts`
-- **Linter**: Biome (NO ESLint)
-- **Package manager**: pnpm
-- **Tamaño**: ~18 archivos TypeScript, 4 features
-- **Arquitectura**: Clean Architecture pragmática (4 capas: Entities → Use Cases → Adapters → Frameworks)
+Raíz: `src/TypeScripts/multicard-api/`.
 
-## Capas de la Arquitectura (de multicard-api)
+| Responsabilidad | Ubicación | Archivo |
+| --- | --- | --- |
+| Entidades, cálculos y tipos del dominio | `features/<feature>/domain/` | `<feature>.domain.ts` |
+| Caso de uso (orquesta, devuelve `ApiResponse<T>`) | `features/<feature>/usecase/` | `<accion>.usecase.ts` |
+| Puerto (`IXxxRepository`) | `features/<feature>/usecase/ports/` | `<feature>.repository.port.ts` |
+| Adaptador NetSuite (`NetSuiteXxxRepository`) | `features/<feature>/repository/` | `<feature>.repository.ts` |
+| Entrada HTTP y composition root | `suitescript/restlet/` | `mc_rl_mcard_<verb_noun>.ts` |
+| Tipos usados por varios features | `shared/` | — |
+| Objeto SDF del RESTlet | `src/Objects/restlet/` | `customscript_mc_rl_mcard_<nombre>.xml` |
+| Tests | `__test__/<feature>/` | `<accion>.usecase.test.js`, `<feature>.domain.test.js` |
 
-### Layer 1 — Entities (Dominio)
-- Ubicación: `src/TypeScripts/multicard-api/features/[feature]/domain/`
-- Contiene tres tipos de pieza; cada feature usa la que corresponde (guía completa: [`docs/arquitectura/patron-dominio.md`](../../../docs/arquitectura/patron-dominio.md)):
-  1. **Entidad** — identidad + reglas sobre su estado (`XxxProps`, clase, getters, `isX/hasX/canX`, `toJSON()`). Ej: `Customer`.
-  2. **Cálculo de dominio** — funciones puras sin identidad. Ej: amortización de `installment`.
-  3. **Read model** — proyección que reutiliza los `XxxJSON` de otros features. Ej: resumen de `sales-order`.
-- No todo es una clase; hoy solo `customer` es una entidad con reglas.
-- CERO imports de NetSuite
+Header JSDoc: todos los módulos llevan `@NApiVersion 2.1`. Los RESTlets agregan `@NScriptType Restlet` y `@NModuleScope SameAccount`; el resto usa `@NModuleScope Public`.
 
-### Layer 2 — Use Cases (Aplicación)
-- Ubicación: `src/TypeScripts/multicard-api/features/[feature]/usecase/`
-- Contiene: clases `Interactor` con métodos `execute(input) → ApiResponse<output>`
-- Declaran los ports de repositorio en `usecase/ports/` (ej: `customer.repository.port.ts`). Deuda conocida: `installment` e `invoice` todavía los declaran inline en el archivo del use case
-- Inyección de dependencias por constructor
+## Elegir la pieza de dominio
 
-### Layer 3 — Adapters (Adaptadores)
-- **Repositories**: `src/TypeScripts/multicard-api/features/[feature]/repository/`
-  - Implementan los ports de la capa 2
-  - Usan módulos NetSuite (`N/search`, `N/record`, `N/log`)
-- **RESTlets**: `src/TypeScripts/multicard-api/suitescript/restlet/`
-  - Reciben requests HTTP, llaman usecases, devuelven JSON
+1. ¿Tiene identidad y reglas sobre su propio estado? → **Entidad** (clase con `XxxProps`, getters, `isX`/`hasX`/`canX`, `toJSON()`).
+2. ¿Es una transformación sin identidad (montos, fechas, tablas)? → **Cálculo de dominio** (funciones puras; la fecha de referencia se inyecta).
+3. ¿Solo combina datos de otros features para una respuesta? → **Read model** (tipos que reutilizan los `XxxJSON` de esos features, sin reglas).
 
-### Layer 4 — Frameworks & Tools
-- NetSuite modules: `N/search`, `N/record`, `N/log`
-- **IMPORTANTE**: `N/log` solo tiene `debug`, `audit`, `error` y `emergency` (no existen `warn` ni `info`)
-- Headers obligatorios: `@NApiVersion 2.1`, `@NModuleScope Public`, `@NScriptType Restlet` (este último solo en RESTlets)
+Si una entidad no tiene comportamiento, es un tipo, no una clase.
 
-## Estructura de Carpetas del Proyecto
+## Workflow: nuevo caso de uso expuesto como RESTlet
 
-```
-multicard-api/
-├── .claude/skills/             ← skills (Claude Code y OpenCode)
-├── openspec/                   ← artifacts SDD (proposal, design, tasks, specs)
-│   └── changes/                ← un directorio por change activo
-├── src/TypeScripts/multicard-api/
-│   ├── features/
-│   │   ├── customer/
-│   │   │   ├── domain/
-│   │   │   ├── usecase/        (ports en ports/; installment e invoice aún inline: deuda)
-│   │   │   └── repository/
-│   │   ├── installment/        (misma estructura)
-│   │   ├── invoice/            (misma estructura)
-│   │   └── sales-order/        (misma estructura)
-│   ├── shared/                 (tipos cross-feature)
-│   └── suitescript/restlet/    (RESTlets HTTP)
-├── __test__/                   (tests en .js, espejo de features/)
-├── temp/                       (referencias de diseño, sin ARCHITECTURE.md)
-│   ├── ENGRAM_MEMORY.md
-│   └── 📌  Introducción a las "Clean Architectures".md
-├── biome.json
-├── package.json
-└── tsconfig.json
-```
+Copiar este checklist y marcarlo durante el trabajo:
 
-## Reglas de Negocio del Legacy (mc_multicard_lib_v1.0.js)
+- [ ] 1. Dominio: agregar o ajustar la pieza correspondiente. Las reglas de negocio nuevas van aquí, no en el use case.
+- [ ] 2. Puerto: declarar o extender `IXxxRepository` en `usecase/ports/`, con métodos en términos del negocio (`findByDocumentNumber`, no `runSearch`).
+- [ ] 3. Repositorio: implementar el puerto. IDs de NetSuite en `FIELDS`; un único mapper `toDomain` que devuelve piezas del dominio.
+- [ ] 4. Use case: una clase con `execute(...)`, dependencias por constructor tipadas con el puerto, respuesta con `success()`/`failure()` y `message` en español.
+- [ ] 5. RESTlet: un archivo nuevo. Repositorio instanciado a nivel de módulo, validación de parámetros del request, `new` del use case por request, `JSON.stringify(useCase.execute(...))`. Sin lógica de negocio.
+- [ ] 6. Objeto SDF: `customscript_mc_rl_mcard_<nombre>.xml` en `src/Objects/restlet/`.
+- [ ] 7. Tests: test del use case con un fake literal del puerto (sin mocks de `N/*`); test de dominio si hay reglas o cálculos nuevos.
+- [ ] 8. Validar con `pnpm build && pnpm test && pnpm lint` y con el checklist de revisión. Si algo falla, corregir y repetir desde el paso que corresponda.
 
-Estas reglas vienen del sistema original y deben respetarse en cualquier cambio:
+Un caso de uso interno, sin endpoint, omite los pasos 5 y 6.
 
-### Customer
-- **Subsidiary**: solo ID 6
-- **Card valid**: `cardStatus === '1'`
-- **Phone valid**: `mobilePhone.length >= 8` dígitos
-- **Approved**: `mcStatus === 'Aprobado'`
-- **Contract + insurance**: ambos deben estar firmados para compra
-- **Available balance**: `creditLimit - balance`
+## Checklist de revisión arquitectónica
 
-### Installment
-- **Normal/Corporate**: sistema francés, tasa anual 34.92%
-- **Employee**: monto fijo sin interés
-- **Payment day**: mínimo 20 días adelante (DAYS_VALID_DATE_PAY = 20)
-- **Fórmula francesa**: `r = 34.92 / 100 / 12; fixedInstallment = (amount * r) / (1 - (1 + r)^-n)`
-- **Status**: 1=Active, 4=Mora
+Ejecutar desde `src/TypeScripts/multicard-api/`. Cada comando debe dar 0 resultados:
 
-### Invoice
-- Campos custom: `custbody_sdb_numero_factura`, `custbody_sdb_cuf`, `custbody_sdb_bill_to_nit`, `custbody_sdb_fa_custom_names`
-- `trandate` → date, `location` → location (texto), `total` → amount
+- Dominio y use cases sin NetSuite: `rg -n "from 'N/" features/*/domain features/*/usecase`
+- IDs de NetSuite solo en repositorios: `rg -n "cust(entity|body|record)_" features/*/domain features/*/usecase suitescript`
+- Use cases sin instanciar adaptadores: `rg -n "new NetSuite" features/*/usecase`
+- Puertos fuera de `ports/`: `rg -n "^export interface I\w+Repository" features/*/usecase --glob '!**/ports/**'`
+- RESTlets sin despacho por acción: `rg -n "action" suitescript/restlet`
 
-### Status Codes (ValidateCustomerForPurchase)
-- `STATUS_UNKNOWN` — no se encontró el documento
-- `STATUS_DISABLED` — tarjeta multicard inhabilitada
-- `STATUS_MORA` — cliente tiene cuotas en mora
-- `STATUS_NOPHONE` — sin teléfono móvil válido
-- `STATUS_NOBALANCE` — sin saldo disponible
-- `STATUS_SUCCESS` — cliente habilitado
+Además, revisar a mano:
 
-### Custom Records / Fields clave
-- `customrecord_sdb_siscred_cuota` — record de cuotas (installments)
-- `custentity_sdb_siscred_*` — fields de customer
-- `custbody_sdb_*` — fields de invoice y sales order
-- `custrecord_sdb_*` — fields de custom records
+- Cada RESTlet expone un único use case.
+- Los use cases no repiten reglas que deberían ser métodos del dominio.
+- Los read models no redefinen shapes que ya existen como `XxxJSON` en otro feature.
+- Los tipos de datos no llevan prefijo `I`; solo los puertos.
 
-> **Fuente de verdad**: estos valores están hardcoded en los domain files y repositories. Cualquier cambio a estas reglas debe actualizar el código Y propagar a tests.
+## Anti-patrones
 
-## Convenciones del Proyecto
-
-- **Naming**: inglés para código, comentarios, identificadores
-- **API Response estándar**: `{success: bool, data: T, message: string, error: string | null}`
-- **Tests**: `.js` files en `__test__/[feature]/[name].test.js`, importan vía alias `SuiteScripts`
-- **Strict TDD Mode**: activo (Jest configurado) — seguir RED → GREEN → REFACTOR
-- **Layer suffix convention**: `[name].domain.ts`, `[name].usecase.ts`, `[name].repository.ts`
-- **Ports**: interfaces declaradas en `usecase/ports/` (ver Regla 5)
-- **No domain split especulativo**: 200 líneas de funciones puras no requieren split (YAGNI para este tamaño de proyecto)
-
-## RESTlet Naming Convention
-
-Patrón obligatorio para todos los archivos RESTlet en `suitescript/restlet/`:
-
-```
-mc_rl_mcard_<acción>.ts
-```
-
-**Segmentos:**
-
-| Segmento | Significado | Razón |
-|---|---|---|
-| `mc` | Multicenter (abreviatura del cliente/proyecto contenedor) | Identifica el cliente en NetSuite |
-| `rl` | RESTlet | Tipo de script NetSuite |
-| `mcard` | Multicard (nombre del módulo/proyecto funcional) | Calificador del módulo funcional |
-| `<acción>` | `verb_noun` del endpoint (ej: `get_customer`, `validate_customer_for_purchase`) | Auto-documenta la operación |
-
-### Regla 6 — 1 RESTlet por use case (no fat RESTlet)
-
-Cada use case expuesto como endpoint HTTP tiene **su propio archivo RESTlet** con su propio composition root. No se usa dispatching por `?action=...` ni por presencia de params dentro de un mismo RESTlet.
-
-**Anti-pattern prohibido:**
-```ts
-// ❌ MAL: 1 RESTlet, N use cases, dispatch por action
-if (action === 'byId') return new GetCustomerById(...).execute(...);
-if (action === 'validate') return new ValidateCustomerForPurchase(...).execute(...);
-return new GetCustomer(...).execute(...);
-```
-
-**Patrón correcto:**
-```ts
-// ✅ BIEN: N RESTlets, cada uno con 1 use case
-// mc_rl_mcard_get_customer_by_id.ts
-const useCase = new GetCustomerById(customerRepo);
-return JSON.stringify(useCase.execute(customerId));
-```
-
-**Razones:**
-- **Deploys independientes**: cambiar 1 endpoint no requiere redeployar todos
-- **Audit logs limpios**: cada RESTlet tiene su propio namespace en NetSuite logs
-- **URLs auto-documentadas**: el path dice qué hace, no hay `?action=magia`
-- **OpenAPI/Swagger**: trivial generar spec (1 path por RESTlet)
-- **Blast radius chico**: un bug en un endpoint no toca los demás
-
-**Tradeoff aceptado:** 4 fat RESTlets → 7 focused RESTlets. Más archivos, pero cada uno es chico (20-40 líneas) y focused.
-
-> **Nota**: No todos los use cases son endpoints HTTP. `CheckCustomerInstallmentMora` existe como use case interno pero no se expone como RESTlet (no hay requerimiento de negocio aún). Cuando se exponga, sigue el mismo patrón: `mc_rl_mcard_check_customer_installment_mora.ts`.
-
-### Inventario actual (post-migración 2026-06-02)
-
-| Archivo | Use case | HTTP | Params |
-|---|---|---|---|
-| `mc_rl_mcard_get_customer.ts` | `GetCustomer` | GET | `documentNumber` |
-| `mc_rl_mcard_get_customer_by_id.ts` | `GetCustomerById` | GET | `customerId` |
-| `mc_rl_mcard_validate_customer_for_purchase.ts` | `ValidateCustomerForPurchase` | GET | `documentNumber` |
-| `mc_rl_mcard_generate_installments.ts` | `GenerateInstallments` | POST | body JSON (`IInstallmentInput`) |
-| `mc_rl_mcard_get_invoice.ts` | `GetInvoice` | GET | `invoiceId` |
-| `mc_rl_mcard_get_sales_order_by_id.ts` | `GetSalesOrderById` | GET | `salesOrderId` |
-| `mc_rl_mcard_get_sales_orders_by_document.ts` | `GetSalesOrdersByDocument` | GET | `documentNumber`, `complemento?`, `page?` |
-
-## Reglas de Clean Architecture (obligatorias)
-
-Estas reglas rigen para cualquier código nuevo. El código existente las cumple, pero no se refactoriza por el simple hecho de estandarizar.
-
-### Regla 1 — Todo feature con dependencias externas DEBE tener port
-
-Si el usecase necesita leer/escribir datos externos (NetSuite, otra API, etc.), **debe declarar un port** (interface `IXxxRepository`) y **nunca depender directamente** de NetSuite.
-
-**Anti-pattern prohibido:**
-```ts
-// ❌ MAL: usecase depende directamente de NetSuite
-import * as search from 'N/search';
-export class GetCustomer {
-  execute(doc: string) {
-    return search.create({...}).run();  // acoplado a NetSuite
-  }
-}
-```
-
-**Patrón correcto:**
-```ts
-// ✅ BIEN: usecase depende del port
-import type { ICustomerRepository } from './ports/customer.repository.port';
-export class GetCustomer {
-  constructor(private readonly customerRepo: ICustomerRepository) {}
-  execute(doc: string) { return this.customerRepo.findByDocumentNumber(doc); }
-}
-```
-
-### Regla 2 — Implementación del port va en `repository/`, no en `usecase/`
-
-El usecase declara la interface. La implementación con NetSuite (`N/search`, `N/record`, `N/log`) va en `repository/[name].repository.ts` con clase `NetSuiteXxxRepository implements IXxxRepository`.
-
-### Regla 3 — Inyección por constructor, no instanciación interna
-
-Los usecases **nunca** hacen `new NetSuiteCustomerRepository()`. Reciben el repo por constructor. Esto permite:
-- Tests con fakes in-memory
-- Cambio de implementación sin tocar el usecase
-- Composición en el RESTlet (composition root)
-
-### Regla 4 — Tests usan fakes, no mocks de NetSuite
-
-Los tests en `__test__/` implementan fakes in-memory de los ports. **No** se mockean los módulos `N/search`, `N/record`, `N/log` (salvo que sea estrictamente necesario).
-
-### Regla 5 — Ubicación del port: siempre `usecase/ports/`
-
-Los ports (`IXxxRepository`) se declaran **siempre** en `usecase/ports/`, nunca inline en el archivo del use case ni en `repository/`. Así lo establece `AGENTS.md`.
-
-**Deuda conocida:** `installment` e `invoice` todavía declaran su port inline en el archivo del use case (ej: `IInvoiceRepository` en `invoice.usecase.ts`). Mover esos ports a `usecase/ports/` al tocar esos features; no es un requisito para código existente que no se modifica.
-
-## Responsabilidades
-
-1. **Análisis técnico profundo**: evaluar impacto de cambios arquitecturales en este proyecto específico
-2. **Validación contra convenciones**: ¿el código nuevo sigue el patrón de Clean Architecture pragmática observado en el codebase?
-3. **Refactor guidance**: cuándo vale la pena refactorizar vs cuándo es YAGNI (este proyecto es pequeño)
-4. **SDD workflow**: guiar uso de OpenSpec (`/sdd-init`, `/sdd-new`, `/sdd-apply`, `/sdd-verify`, `/sdd-archive`)
-5. **Documentación técnica**: mantener artifacts en `openspec/changes/` (la arquitectura vive en el código, no en archivos de análisis)
-
-## Instrucciones de Trabajo para Este Proyecto
-
-- **Tamaño del proyecto importa**: NO aplicar Clean Architecture purista/Hexagonal a un proyecto de 18 archivos. Es YAGNI.
-- **Consistencia con codebase existente**: seguir el patrón observado, no el ideal teórico.
-- **Validar contra código real**: leer archivos existentes antes de proponer cambios. Customer, invoice, installment y sales-order ya están implementados — usarlos como referencia.
-- **Strict TDD**: tests en `.js`, correr con `pnpm test`. Los 67 tests existentes son la red de seguridad.
-- **Linter**: `pnpm lint` (Biome). Si hay errores de formato, `pnpm lint:fix` los corrige.
-- **Build**: `pnpm build` para validar compilación AMD.
-- **Log.warn NO existe en NetSuite**: usar `log.audit` o `log.error` para side effects.
-
-## Entregables Típicos
-
-- Análisis técnico siguiendo el formato del proyecto (`*_ANALYSIS.md` o artifacts en `openspec/changes/`)
-- Diagramas ASCII de las 4 capas cuando ayude
-- Recomendaciones de patterns específicos para NetSuite (N/search, N/record, N/log)
-- Planes de implementación paso a paso con gates explícitos (build/lint/test)
-- Validación contra el código real (los domain files, repositories, y usecases son la fuente de verdad)
-
-## Comandos Frecuentes
-
-- `pnpm build` — compilar TS → AMD
-- `pnpm test` — correr Jest
-- `pnpm lint` — Biome check
-- `pnpm lint:fix` — Biome auto-fix
-- `grep -r "log\.warn" src/` — gate obligatorio: debe dar 0 matches
+- **RESTlet con varias acciones** (`?action=` o despacho por parámetros): un archivo y un use case por endpoint.
+- **Puerto inline** en el archivo del use case: va en `usecase/ports/`. Parte del código existente todavía lo hace; no tomarlo como modelo.
+- **Use case que instancia su repositorio:** el repositorio llega por constructor y se crea en el RESTlet.
+- **Read model con shapes copiadas** de otros features: reutilizar sus `XxxJSON`.
+- **Refactor por uniformidad:** el código existente que no se toca no se reescribe solo para estandarizarlo; se ajusta al modificarlo.

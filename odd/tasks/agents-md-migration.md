@@ -37,6 +37,8 @@ Out of scope: any source code change. User WIP in `customer.domain.ts` and `sale
 
 - [x] T5 — Trim `AGENTS.md` to agent-only rules: drop `docs/` references and everything README covers (overview, commands, structure, naming); add a Testing section to `README.md`; flag inline-port debt; fix `N/log` methods (only `debug`/`audit`/`error`/`emergency`, verified in `@hitc/netsuite-types`) in AGENTS.md and the skill. Route: inline. Commit: `92bf45f`.
 
+- [x] T6 — Restructure the `architect` skill to architecture only (269 → 75 lines): drop agent persona, project inventory, counts, dated notes, legacy business rules, NetSuite IDs, generic DI examples and rules duplicated from `AGENTS.md`; add layer map, domain piece decision, "new use case + RESTlet" checklist with validation loop, runnable review checklist, anti-patterns. Fixed RESTlet header (`SameAccount`, not `Public`). Route: inline. Check: the 5 review commands run; they report the known inline ports (invoice, installment) and a new finding: `installment.usecase.ts` names `custentity_mc_date_first_sale_multicard` in comments (lines 9, 128).
+
 ## Acceptance criteria
 
 - `CLAUDE.md` imports `AGENTS.md`; `AGENTS.md` contains all previous `CLAUDE.md` content plus the domain pattern rules.
