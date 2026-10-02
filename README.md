@@ -48,7 +48,7 @@ suitescript/restlet/ ← driving adapters (HTTP entry points, composition root)
 shared/              ← cross-feature types (ApiResponse, CUSTOMER_TYPE, status codes)
 ```
 
-Full architecture guide lives in the `architect` skill, shared by Claude Code and OpenCode: [`.claude/skills/architect/SKILL.md`](.claude/skills/architect/SKILL.md).
+Full architecture guide lives in the `netsuite-clean-architecture` skill, shared by Claude Code and OpenCode: [`.claude/skills/netsuite-clean-architecture/SKILL.md`](.claude/skills/netsuite-clean-architecture/SKILL.md).
 
 Agent instructions for every tool live in [`AGENTS.md`](AGENTS.md).
 

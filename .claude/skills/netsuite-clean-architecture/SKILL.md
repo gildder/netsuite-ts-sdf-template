@@ -1,9 +1,9 @@
 ---
-name: architect
+name: netsuite-clean-architecture
 description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript/AMD, Clean Architecture pragmática). Usar al crear o revisar features, casos de uso, puertos, repositorios o RESTlets, al decidir en qué capa va una responsabilidad o cómo modelar el dominio, y al validar la regla de dependencia.
 ---
 
-# Architect — multicard-api
+# NetSuite Clean Architecture — multicard-api
 
 Las reglas de arquitectura están en `AGENTS.md` (siempre cargado). Esta skill no las repite: indica cómo aplicarlas al crear o revisar código. Si algo contradice `AGENTS.md`, gana `AGENTS.md`.
 
