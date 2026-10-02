@@ -35,6 +35,8 @@ Out of scope: any source code change. User WIP in `customer.domain.ts` and `sale
 
 - [x] T4 — Convert the `architect` agent into one shared skill at `.claude/skills/architect/SKILL.md` (Claude Code and OpenCode both read `.claude/skills/`; Claude Code does not read `.agents/skills/` or `.opencode/skills/`). Remove `.claude/agents/architect/` and the duplicate `.opencode/skills/architect/`; frontmatter reduced to `name` + `description`; `.gitignore` changed from `.claude/` to `.claude/*` + `!.claude/skills/`; references updated in `AGENTS.md`, `README.md`, `resumen-arquitectura.md`. Route: inline (mechanical, already understood). Commit: `92ec644`. Check: `git check-ignore` confirms the skill is tracked and `.claude/settings.local.json` stays ignored.
 
+- [x] T5 — Trim `AGENTS.md` to agent-only rules: drop `docs/` references and everything README covers (overview, commands, structure, naming); add a Testing section to `README.md`; flag inline-port debt; fix `N/log` methods (only `debug`/`audit`/`error`/`emergency`, verified in `@hitc/netsuite-types`) in AGENTS.md and the skill. Route: inline. Commit: `92bf45f`.
+
 ## Acceptance criteria
 
 - `CLAUDE.md` imports `AGENTS.md`; `AGENTS.md` contains all previous `CLAUDE.md` content plus the domain pattern rules.
