@@ -10,7 +10,11 @@ import { type ApiResponse, failure, success } from '../../../shared/response';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
 import type { IInstallmentRepository } from '../../installment/usecase/installment.usecase';
 import type { IInvoiceRepository } from '../../invoice/usecase/invoice.usecase';
-import type { SalesOrderSummaryResponse } from '../domain/sales-order.domain';
+import {
+  type SalesOrderSummaryResponse,
+  toCustomerSummary,
+  toInvoiceSummary,
+} from '../domain/sales-order.domain';
 import type { ISalesOrderRepository } from './ports/sales-order.repository.port';
 
 export class GetSalesOrderSummary {
@@ -44,37 +48,10 @@ export class GetSalesOrderSummary {
 
     const installments = this.installmentRepo.findInstallmentsByInvoiceId(invoice.id);
 
-    const invoiceJSON = invoice.toJSON();
-    const customerDetail = customer.toDetailJSON();
-
     const summary: SalesOrderSummaryResponse = {
       salesOrderID: salesOrder.id,
-      invoice: {
-        id: invoiceJSON.id,
-        date: invoiceJSON.date,
-        location: invoiceJSON.location,
-        invoiceNumber: invoiceJSON.invoiceNumber,
-        customerNit: invoiceJSON.customerNit,
-        customerName: invoiceJSON.customerName,
-        email: invoiceJSON.email,
-        amount: invoiceJSON.amount,
-        cuf: invoiceJSON.cuf,
-        customerId: invoiceJSON.customerId,
-        cashRegister: invoiceJSON.cashRegister,
-      },
-      customer: {
-        id: customerDetail.id,
-        documentNumber: customerDetail.documentNumber,
-        typeDocument: customerDetail.typeDocument,
-        name: customerDetail.name,
-        email: customerDetail.email,
-        phone: customerDetail.mobilePhone,
-        type: customerDetail.type,
-        creditLimit: customerDetail.creditLimit,
-        balance: customerDetail.balance,
-        paymentDay: String(customerDetail.paymentDay),
-        contractNumber: customerDetail.contractNumber,
-      },
+      invoice: toInvoiceSummary(invoice.toJSON()),
+      customer: toCustomerSummary(customer.toDetailJSON()),
       installments,
     };
 

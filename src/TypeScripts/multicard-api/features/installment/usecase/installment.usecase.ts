@@ -17,6 +17,7 @@ import {
   type IInstallmentInput,
   type IInstallmentResult,
   type InstallmentRecord,
+  type InstallmentSummaryResult,
   buildAmortizationTable,
   buildSimpleAmortization,
   getNextMonthDate,
@@ -26,14 +27,6 @@ import {
 // ---------------------------------------------------------------------------
 // Port (driven side) — declared by the use case, implemented by infra
 // ---------------------------------------------------------------------------
-
-export interface InstallmentSummaryResult {
-  id: string;
-  nro: number;
-  paymentDate: string;
-  total: number;
-  financedAmount: number;
-}
 
 export interface IInstallmentRepository {
   hasMora(customerId: string): boolean;
@@ -45,7 +38,7 @@ export interface IInstallmentRepository {
 }
 
 // Re-export domain input/result types for convenience
-export type { IInstallmentInput, IInstallmentResult };
+export type { IInstallmentInput, IInstallmentResult, InstallmentSummaryResult };
 
 // ---------------------------------------------------------------------------
 // Use case: GenerateInstallments

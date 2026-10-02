@@ -55,6 +55,14 @@ export interface IInstallmentResult {
   total: number;
 }
 
+export interface InstallmentSummaryResult {
+  id: string;
+  nro: number;
+  paymentDate: string;
+  total: number;
+  financedAmount: number;
+}
+
 /**
  * Shape used for persistence (passed to IInstallmentRepository.save).
  * Mirrors the createInstallment params from the legacy, adapted to clean arch.
