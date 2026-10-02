@@ -5,9 +5,19 @@ description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript
 
 # NetSuite Clean Architecture — multicard-api
 
-Las reglas de arquitectura están en `AGENTS.md` (siempre cargado). Esta skill no las repite: indica cómo aplicarlas al crear o revisar código. Si algo contradice `AGENTS.md`, gana `AGENTS.md`.
+Esta skill es la fuente de las reglas de arquitectura del proyecto y de cómo aplicarlas al crear o revisar código.
 
 Implementación de referencia, para copiar su forma: `get-customer` (RESTlet `mc_rl_mcard_get_customer.ts`, use case `get-customer.usecase.ts`, puerto `customer.repository.port.ts`, repositorio `customer.repository.ts`, dominio `customer.domain.ts`).
+
+## Reglas
+
+- Las dependencias apuntan hacia adentro: script → use case → dominio. El repositorio implementa un puerto que declara el use case.
+- `domain/` y `usecase/` no importan `N/*`. Solo `repository/` importa `N/search`, `N/record` y `N/log`.
+- Los puertos (`IXxxRepository`) se declaran en `usecase/ports/`, nunca en `repository/` ni inline en el use case. Un use case puede consumir el puerto de otro feature.
+- Los IDs de NetSuite (`custentity_...`, `custbody_...`, tipos de record) viven solo en el repositorio, en una constante `FIELDS` junto a un único mapper `toDomain`. Tampoco aparecen en comentarios fuera del repositorio.
+- El script es el composition root: instancia el repositorio una vez a nivel de módulo, parsea la entrada, crea el use case por ejecución y devuelve su resultado. Ejemplo: `JSON.stringify(useCase.execute(...))` en un RESTlet.
+- Un script por use case. Un RESTlet no despacha por `?action=`, y sus entradas vienen del query string o del body JSON, nunca de parámetros de script SDF.
+- Todo use case expuesto devuelve `ApiResponse<T>` (`{ success, data, message, error }`) con `success()` / `failure()` de `shared/response.ts`. Los `message` para el usuario van en español.
 
 ## Mapa de capas
 
@@ -53,6 +63,14 @@ Cualquier tipo de script es un adaptador de entrada: solo traduce el evento de N
 3. ¿Solo combina datos de otros features para una respuesta? → **Read model** (tipos que reutilizan los `XxxJSON` de esos features, sin reglas).
 
 Si una entidad no tiene comportamiento, es un tipo, no una clase.
+
+Convenciones del dominio:
+
+- Prefijo `I` solo para puertos; los tipos de datos no lo llevan.
+- El dominio define `XxxProps` / `XxxJSON`; el use case define `XxxInput` / `XxxOutput`.
+- Orden del archivo: constantes, tipos, entidad, funciones puras.
+- Las reglas de negocio viven en el dominio, no en los use cases.
+- Cada dominio tiene su test de dominio en `__test__/<feature>/`, con fakes en lugar de mocks de NetSuite.
 
 ## Workflow: nuevo caso de uso expuesto como RESTlet
 
