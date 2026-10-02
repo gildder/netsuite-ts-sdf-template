@@ -33,6 +33,8 @@ Out of scope: any source code change. User WIP in `customer.domain.ts` and `sale
 - [x] T2 — Create `AGENTS.md` from `CLAUDE.md` + concise domain pattern rules; reduce `CLAUDE.md` to `@AGENTS.md`. Route: delegated (same writer). Commit: `6018b45`.
 - [x] T3 — Fix `agent.md` and `SKILL.md`: domain layer description, port location rule, reference to `AGENTS.md` and the guide. Route: delegated (same writer). No commit: `.claude/` is in `.gitignore` and `.opencode/` in `.git/info/exclude`, so both files are unversioned; change applied on disk only.
 
+- [x] T4 — Convert the `architect` agent into one shared skill at `.claude/skills/architect/SKILL.md` (Claude Code and OpenCode both read `.claude/skills/`; Claude Code does not read `.agents/skills/` or `.opencode/skills/`). Remove `.claude/agents/architect/` and the duplicate `.opencode/skills/architect/`; frontmatter reduced to `name` + `description`; `.gitignore` changed from `.claude/` to `.claude/*` + `!.claude/skills/`; references updated in `AGENTS.md`, `README.md`, `resumen-arquitectura.md`. Route: inline (mechanical, already understood). Commit: `92ec644`. Check: `git check-ignore` confirms the skill is tracked and `.claude/settings.local.json` stays ignored.
+
 ## Acceptance criteria
 
 - `CLAUDE.md` imports `AGENTS.md`; `AGENTS.md` contains all previous `CLAUDE.md` content plus the domain pattern rules.
