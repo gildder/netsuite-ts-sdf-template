@@ -1,6 +1,6 @@
 ---
 name: netsuite-clean-architecture
-description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript/AMD, Clean Architecture pragmática). Usar al crear o revisar features, casos de uso, puertos, repositorios o RESTlets, al decidir en qué capa va una responsabilidad o cómo modelar el dominio, y al validar la regla de dependencia.
+description: Arquitectura del proyecto multicard-api (NetSuite SDF en TypeScript/AMD, Clean Architecture pragmática). Usar al crear o revisar features, casos de uso, puertos, repositorios o scripts de NetSuite (RESTlet, Suitelet, User Event, Map/Reduce, etc.), al decidir en qué capa va una responsabilidad o cómo modelar el dominio, y al validar la regla de dependencia.
 ---
 
 # NetSuite Clean Architecture — multicard-api
@@ -19,12 +19,32 @@ Raíz: `src/TypeScripts/multicard-api/`.
 | Caso de uso (orquesta, devuelve `ApiResponse<T>`) | `features/<feature>/usecase/` | `<accion>.usecase.ts` |
 | Puerto (`IXxxRepository`) | `features/<feature>/usecase/ports/` | `<feature>.repository.port.ts` |
 | Adaptador NetSuite (`NetSuiteXxxRepository`) | `features/<feature>/repository/` | `<feature>.repository.ts` |
-| Entrada HTTP y composition root | `suitescript/restlet/` | `mc_rl_mcard_<verb_noun>.ts` |
+| Script de NetSuite (entry point y composition root) | `suitescript/<tipo>/` | `mc_<prefijo>_mcard_<verb_noun>.ts` |
 | Tipos usados por varios features | `shared/` | — |
-| Objeto SDF del RESTlet | `src/Objects/restlet/` | `customscript_mc_rl_mcard_<nombre>.xml` |
+| Objeto SDF del script | `src/Objects/<tipo>/` | `customscript_mc_<prefijo>_mcard_<nombre>.xml` |
 | Tests | `__test__/<feature>/` | `<accion>.usecase.test.js`, `<feature>.domain.test.js` |
 
 Header JSDoc: todos los módulos llevan `@NApiVersion 2.1`. Los RESTlets agregan `@NScriptType Restlet` y `@NModuleScope SameAccount`; el resto usa `@NModuleScope Public`.
+
+## Prefijos por tipo de script
+
+Todo script en `suitescript/` se nombra `mc_<prefijo>_mcard_<verb_noun>.ts`, con una subcarpeta por tipo de script nombrada como el tipo en minúsculas (por ejemplo, `suitescript/restlet/` y `src/Objects/restlet/`):
+
+| Prefijo | Tipo de script |
+| --- | --- |
+| `cs` | Client Script |
+| `ue` | User Event |
+| `sl` | Suitelet |
+| `rl` | RESTlet |
+| `pl` | Portlet |
+| `ss` | Scheduled |
+| `mr` | Map/Reduce |
+| `gl` | SuiteGL |
+| `wa` | Workflow Action |
+| `mu` | Mass Update |
+| `bi` | Bundle Installation |
+
+Cualquier tipo de script es un adaptador de entrada: solo traduce el evento de NetSuite a una llamada a un use case y actúa como composition root. Las reglas de negocio no van en el script.
 
 ## Elegir la pieza de dominio
 
@@ -70,6 +90,6 @@ Además, revisar a mano:
 
 - **RESTlet con varias acciones** (`?action=` o despacho por parámetros): un archivo y un use case por endpoint.
 - **Puerto inline** en el archivo del use case: va en `usecase/ports/`. Parte del código existente todavía lo hace; no tomarlo como modelo.
-- **Use case que instancia su repositorio:** el repositorio llega por constructor y se crea en el RESTlet.
+- **Use case que instancia su repositorio:** el repositorio llega por constructor y se crea en el script (composition root).
 - **Read model con shapes copiadas** de otros features: reutilizar sus `XxxJSON`.
 - **Refactor por uniformidad:** el código existente que no se toca no se reescribe solo para estandarizarlo; se ajusta al modificarlo.
