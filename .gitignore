@@ -23,9 +23,13 @@ src/FileCabinet/SuiteScripts/**/*.js
 src/FileCabinet/SuiteScripts/**/*.js.map
 
 # --- AI Tools ---
-# Ignore local Claude Code state, but version shared skills.
+# Ignore local Claude Code state; version only shared, hand-edited config.
 .claude/*
 !.claude/skills/
+!.claude/settings.json
+!.claude/rules/
+!.claude/agents/
+CLAUDE.local.md
 
 # --- IDEs and Editors ---
 # IntelliJ / WebStorm
@@ -250,12 +254,6 @@ vite.config.ts.timestamp-*
 .aider.llm.history
 .aider.tags.cache.v*
 # .aiderignore
-
-# Claude Code
-.claude/*.local.json
-.claude/**/*.log
-CLAUDE.local.md
-# .claude/
 
 # Gemini CLI
 gemini-debug.log
