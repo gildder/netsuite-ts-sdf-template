@@ -48,10 +48,9 @@ suitescript/restlet/ ← driving adapters (HTTP entry points, composition root)
 shared/              ← cross-feature types (ApiResponse, CUSTOMER_TYPE, status codes)
 ```
 
-Full architecture guide lives in the architect agent:
+Full architecture guide lives in the `architect` skill, shared by Claude Code and OpenCode: [`.claude/skills/architect/SKILL.md`](.claude/skills/architect/SKILL.md).
 
-- **Claude Code:** [`.claude/agents/architect/agent.md`](.claude/agents/architect/agent.md)
-- **Opencode:** [`.opencode/skills/architect/SKILL.md`](.opencode/skills/architect/SKILL.md)
+Agent instructions for every tool live in [`AGENTS.md`](AGENTS.md).
 
 ## RESTlet Naming Convention
 

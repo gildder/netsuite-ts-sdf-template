@@ -11,7 +11,7 @@ Reference docs (read on demand — not duplicated here):
 - `MANUAL.md` — endpoint reference, request/response shapes, TBA/OAuth 1.0 auth.
 - `docs/arquitectura/resumen-arquitectura.md` — layer-by-layer architecture explanation (Spanish).
 - `docs/arquitectura/patron-dominio.md` — how to model the domain layer.
-- `.claude/agents/architect/agent.md` — full architecture guide (the `architect` agent); this file is the source of truth for rules.
+- `.claude/skills/architect/SKILL.md` — full architecture guide (the `architect` skill, read by Claude Code and OpenCode). AGENTS.md is the source of truth for rules.
 
 ## Commands
 

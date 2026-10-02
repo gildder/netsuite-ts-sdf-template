@@ -23,7 +23,9 @@ src/FileCabinet/SuiteScripts/**/*.js
 src/FileCabinet/SuiteScripts/**/*.js.map
 
 # --- AI Tools ---
-.claude/
+# Ignore local Claude Code state, but version shared skills.
+.claude/*
+!.claude/skills/
 
 # --- IDEs and Editors ---
 # IntelliJ / WebStorm

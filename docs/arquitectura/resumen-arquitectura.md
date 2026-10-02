@@ -2,7 +2,7 @@
 
 Este documento describe cómo está organizado el código de `multicard-api`, qué responsabilidad tiene cada capa y por qué existe.
 
-> Guía completa: [`.claude/agents/architect/agent.md`](../../.claude/agents/architect/agent.md). Referencia de endpoints: [`MANUAL.md`](../../MANUAL.md).
+> Guía completa: [`.claude/skills/architect/SKILL.md`](../../.claude/skills/architect/SKILL.md). Referencia de endpoints: [`MANUAL.md`](../../MANUAL.md).
 
 ## Conceptos base
 
