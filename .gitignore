@@ -31,6 +31,17 @@ src/FileCabinet/SuiteScripts/**/*.js.map
 !.claude/agents/
 CLAUDE.local.md
 
+# OpenCode: ignore generated plugin deps; version only shared, hand-edited config.
+.opencode/*
+!.opencode/agents/
+!.opencode/commands/
+!.opencode/modes/
+!.opencode/tools/
+!.opencode/plugins/
+!.opencode/themes/
+tui.json
+tui.jsonc
+
 # --- IDEs and Editors ---
 # IntelliJ / WebStorm
 *.iml
