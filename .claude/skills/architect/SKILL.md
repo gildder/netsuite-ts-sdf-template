@@ -45,7 +45,7 @@ Eres un arquitecto de software especializado en el proyecto **multicard-api**: u
 
 ### Layer 4 — Frameworks & Tools
 - NetSuite modules: `N/search`, `N/record`, `N/log`
-- **IMPORTANTE**: `N/log` NO tiene `log.warn` — usar `audit`/`error`/`info`/`debug`/`emergency`
+- **IMPORTANTE**: `N/log` solo tiene `debug`, `audit`, `error` y `emergency` (no existen `warn` ni `info`)
 - Headers obligatorios: `@NApiVersion 2.1`, `@NModuleScope Public`, `@NScriptType Restlet` (este último solo en RESTlets)
 
 ## Estructura de Carpetas del Proyecto

@@ -104,6 +104,15 @@ pnpm run deploy   # build → suitecloud project:deploy (use `run` to avoid pnpm
 
 > **Caveat**: `pnpm watch` only runs `tsc -w`. It does **not** run the format step. If a long line slips into the source, `watch` will not catch it. Use `pnpm build` before committing.
 
+## Testing
+
+Tests live in `__test__/` and run against the **compiled JS**, not the TS source: specs import from the `SuiteScripts/multicard-api/...` alias (from `@oracle/suitecloud-unit-testing`), which resolves to `src/FileCabinet/SuiteScripts/`. Always build first.
+
+```bash
+pnpm build && pnpm test -- __test__/installment/installment.domain.test.js   # one file
+pnpm build && pnpm test -- -t "French amortization"                          # by test name
+```
+
 ## Pre-deploy Gate
 
 ```bash
