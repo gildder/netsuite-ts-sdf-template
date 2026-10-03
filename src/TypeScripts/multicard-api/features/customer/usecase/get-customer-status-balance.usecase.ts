@@ -6,6 +6,7 @@
  */
 import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
 import { type ApiResponse, failure, success } from '../../../shared/response';
+import { ENABLED_STATUS } from '../domain/customer.domain';
 import type { ICustomerRepository } from './ports/customer.repository.port';
 
 // ---------------------------------------------------------------------------
@@ -17,16 +18,6 @@ export interface CustomerStatusBalanceResult {
   availableBalance: number;
   creditLimit: number;
 }
-
-// ---------------------------------------------------------------------------
-// Habilitado string literals — inline constants; avoids shared/ pollution
-// ---------------------------------------------------------------------------
-
-const HABILITADO_STATUS = {
-  SI: 'Sí',
-  NO_MORA: 'No, con Mora',
-  NO_MULTICARD: 'No, sin Multicard',
-} as const;
 
 // ---------------------------------------------------------------------------
 // Use case
@@ -56,27 +47,23 @@ export class GetCustomerStatusBalance {
     }
 
     // Step 4: optional complemento guard — mismatch returns same not-found message
-    const comp = (input.complemento ?? '').trim();
-    if (comp !== '' && customer.complemento !== comp) {
+    if (!customer.matchesComplemento(input.complemento)) {
       return failure('No se encontró el cliente.');
     }
 
-    // Step 5: Multicard eligibility guard — both signature flags must be true
-    if (!customer.hasMulticard()) {
+    // Step 5: derive habilitado label (mora is only queried when the customer has Multicard)
+    const enabled = customer.enabledStatus(() => this.installmentRepo.hasMora(customer.id));
+
+    // Step 6: no Multicard returns zero balances
+    if (enabled === ENABLED_STATUS.NO_MULTICARD) {
       return success<CustomerStatusBalanceResult>({
-        enabled: HABILITADO_STATUS.NO_MULTICARD,
+        enabled,
         availableBalance: 0,
         creditLimit: 0,
       });
     }
 
-    // Step 6: check mora status
-    const hasMora = this.installmentRepo.hasMora(customer.id);
-
-    // Step 7: derive habilitado label
-    const enabled = hasMora ? HABILITADO_STATUS.NO_MORA : HABILITADO_STATUS.SI;
-
-    // Step 8: return success with always-present saldoDisponible and balance
+    // Step 7: return success with always-present saldoDisponible and balance
     return success<CustomerStatusBalanceResult>({
       enabled,
       availableBalance: customer.availableBalance,

@@ -49,8 +49,7 @@ export class GetSalesOrdersByCustomerDocument {
 
     // 2. Validar el complemento a nivel de customer (no se puede filtrar sales
     // orders por custom fields del customer joined en NetSuite).
-    const complemento = input.complemento?.trim() ?? '';
-    if (complemento !== '' && customer.complemento !== complemento) {
+    if (!customer.matchesComplemento(input.complemento)) {
       return success<SalesOrderSearchResult>({ salesOrders: [], page });
     }
 

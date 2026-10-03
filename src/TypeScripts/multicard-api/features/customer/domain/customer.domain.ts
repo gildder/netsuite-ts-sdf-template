@@ -6,9 +6,61 @@
  */
 import type { CustomerType } from '../../../shared/customer-type';
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 export const PHONE_LENGTH = 8 as const;
 export const VALID_CARD_STATUS = '1' as const;
 export const APPROVED_STATUS_NAME = 'Aprobado' as const;
+
+/** Etiquetas de habilitación del cliente para el consumo de saldo. */
+export const ENABLED_STATUS = {
+  SI: 'Sí',
+  NO_MORA: 'No, con Mora',
+  NO_MULTICARD: 'No, sin Multicard',
+} as const;
+
+export const STATUS_UNKNOWN: CustomerStatus = {
+  name: 'UNKNOWN',
+  description: 'No se encontró el número de documento ingresado',
+};
+
+export const STATUS_DISABLED: CustomerStatus = {
+  name: 'DISABLED',
+  description: 'Tarjeta multicard inhabilitada',
+};
+
+export const STATUS_MORA: CustomerStatus = {
+  name: 'MORA',
+  description: 'Cliente tiene cuotas con Mora',
+};
+
+export const STATUS_NOPHONE: CustomerStatus = {
+  name: 'NOPHONE',
+  description: 'No tiene un número de teléfono móvil válido',
+};
+
+export const STATUS_NOBALANCE: CustomerStatus = {
+  name: 'NOBALANCE',
+  description: 'No tiene saldo disponible',
+};
+
+export const STATUS_SUCCESS: CustomerStatus = {
+  name: 'SUCCESS',
+  description: 'Cliente habilitado',
+};
+
+// ---------------------------------------------------------------------------
+// Domain types
+// ---------------------------------------------------------------------------
+
+export interface CustomerStatus {
+  name: string;
+  description: string;
+}
+
+export type EnabledStatus = (typeof ENABLED_STATUS)[keyof typeof ENABLED_STATUS];
 
 export interface CustomerProps {
   id: string;
@@ -59,6 +111,10 @@ export interface CustomerDetailJSON {
   paymentDay: number;
   contractNumber: string;
 }
+
+// ---------------------------------------------------------------------------
+// Domain classes
+// ---------------------------------------------------------------------------
 
 export class Customer {
   constructor(private readonly props: CustomerProps) {}
@@ -145,6 +201,33 @@ export class Customer {
 
   belongsToSubsidiary(subsidiaryId: number): boolean {
     return this.props.subsidiary === subsidiaryId;
+  }
+
+  /** El complemento vacío no filtra; si viene informado debe coincidir (ignora espacios). */
+  matchesComplemento(complemento?: string): boolean {
+    const trimmed = (complemento ?? '').trim();
+    return trimmed === '' || this.complemento === trimmed;
+  }
+
+  /**
+   * Estado de elegibilidad para una compra. `hasMora` es perezoso: solo se evalúa
+   * cuando la tarjeta es válida, para no consultar cuotas innecesariamente.
+   */
+  purchaseStatus(hasMora: () => boolean): CustomerStatus {
+    if (!this.isCardValid()) return STATUS_DISABLED;
+    if (hasMora()) return STATUS_MORA;
+    if (!this.isPhoneValid()) return STATUS_NOPHONE;
+    if (!this.hasBalance()) return STATUS_NOBALANCE;
+    return STATUS_SUCCESS;
+  }
+
+  /**
+   * Etiqueta de habilitación del cliente. `hasMora` es perezoso: sin Multicard
+   * no se evalúa.
+   */
+  enabledStatus(hasMora: () => boolean): EnabledStatus {
+    if (!this.hasMulticard()) return ENABLED_STATUS.NO_MULTICARD;
+    return hasMora() ? ENABLED_STATUS.NO_MORA : ENABLED_STATUS.SI;
   }
 
   toJSON(): CustomerJSON {

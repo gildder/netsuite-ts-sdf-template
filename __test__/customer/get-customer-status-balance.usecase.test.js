@@ -5,6 +5,7 @@
  *
  * Strict TDD: tests written first (RED), implementation makes them GREEN.
  */
+import { Customer } from 'SuiteScripts/multicard-api/features/customer/domain/customer.domain';
 import { GetCustomerStatusBalance } from 'SuiteScripts/multicard-api/features/customer/usecase/get-customer-status-balance.usecase';
 
 // ---------------------------------------------------------------------------
@@ -17,15 +18,28 @@ import { GetCustomerStatusBalance } from 'SuiteScripts/multicard-api/features/cu
  * @returns {Object}
  */
 function makeCustomer(overrides = {}) {
-  return {
+  return new Customer({
     id: 'cust-001',
     documentNumber: '12345678',
-    availableBalance: 500,
+    firstName: 'Juan',
+    secondName: '',
+    firstLastName: 'Perez',
+    secondLastName: '',
+    email: '',
+    mobilePhone: '71234567',
+    subsidiary: 1,
+    type: 'Titular',
+    mcStatus: 'Aprobado',
+    cardStatus: '1',
+    contractSigned: true,
+    insuranceSigned: true,
     creditLimit: 1000,
+    balance: 0,
+    availableBalance: 500,
+    paymentDay: 5,
     complemento: '',
-    hasMulticard: () => true,
     ...overrides,
-  };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -84,7 +98,7 @@ describe('GetCustomerStatusBalance — customer not found', () => {
 
 describe('GetCustomerStatusBalance — no Multicard', () => {
   it('returns success with No, sin Multicard when contract or insurance signature is missing', () => {
-    const customer = makeCustomer({ hasMulticard: () => false });
+    const customer = makeCustomer({ contractSigned: false });
     const customerRepo = makeFakeCustomerRepo({ findByDocumentNumber: () => customer });
     const hasMoraCalls = [];
     const installmentRepo = makeFakeInstallmentRepo({

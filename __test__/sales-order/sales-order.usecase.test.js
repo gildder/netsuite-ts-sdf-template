@@ -2,6 +2,7 @@
  * Tests for sales-order use cases.
  * Imports from the compiled AMD output via the SuiteScripts moduleNameMapper alias.
  */
+const { Customer } = require('SuiteScripts/multicard-api/features/customer/domain/customer.domain');
 const {
   GetSalesOrdersByCustomerDocument,
 } = require('SuiteScripts/multicard-api/features/sales-order/usecase/get-sales-orders-by-customer-document.usecase');
@@ -10,6 +11,29 @@ const {
 } = require('SuiteScripts/multicard-api/features/sales-order/usecase/get-sales-order-summary.usecase');
 
 describe('GetSalesOrdersByCustomerDocument', () => {
+  const makeDomainCustomer = (overrides = {}) =>
+    new Customer({
+      id: '500',
+      documentNumber: '1234567',
+      firstName: 'Juan',
+      secondName: '',
+      firstLastName: 'Perez',
+      secondLastName: '',
+      email: '',
+      mobilePhone: '71234567',
+      subsidiary: 1,
+      type: 'Titular',
+      mcStatus: 'Aprobado',
+      cardStatus: '1',
+      contractSigned: true,
+      insuranceSigned: true,
+      creditLimit: 0,
+      balance: 0,
+      availableBalance: 0,
+      paymentDay: 5,
+      ...overrides,
+    });
+
   const fakeSalesOrderRepo = {
     findByCriteria: jest.fn().mockReturnValue([]),
     findById: jest.fn().mockReturnValue(null),
@@ -80,7 +104,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('returns empty array when customer has no Multicard purchases', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     const result = buildUseCase().execute({ documentNumber: '1234567' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
@@ -88,14 +112,14 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('does not query invoices when the customer has no invoice ids', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReturnValue([]);
     buildUseCase().execute({ documentNumber: '1234567' });
     expect(fakeInvoiceRepo.findSalesOrderMapByIds).not.toHaveBeenCalled();
   });
 
   it('clamps negative pages to 0', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     buildUseCase().execute({ documentNumber: '1234567', page: -5 });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
@@ -105,7 +129,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('forwards multicard soIds to findByCriteria without complemento', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '1' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer({ complemento: '1' }));
     givenMulticardPurchases([
       ['100', { invoiceId: 'I1', financedAmount: 1500 }],
       ['101', { invoiceId: 'I2', financedAmount: 2000 }],
@@ -120,7 +144,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('injects the invoice financedAmount into each sales order', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     fakeSalesOrderRepo.findByCriteria.mockReturnValue([{ id: '100', financedAmount: 0 }]);
     const result = buildUseCase().execute({ documentNumber: '1234567' });
@@ -129,7 +153,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('uses the installment fallback amount when the invoice financedAmount is 0', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 0 }]]);
     fakeInstallmentRepo.findFinancedAmountByInvoiceId.mockReturnValue(750);
     fakeSalesOrderRepo.findByCriteria.mockReturnValue([{ id: '100', financedAmount: 0 }]);
@@ -139,7 +163,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('returns failure when findInvoiceIdsByCustomer throws', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     fakeInstallmentRepo.findInvoiceIdsByCustomer.mockImplementation(() => {
       throw new Error('boom');
     });
@@ -150,7 +174,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('returns failure when findSalesOrderMapByIds throws', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReturnValue(['I1']);
     fakeInvoiceRepo.findSalesOrderMapByIds.mockImplementation(() => {
       throw new Error('boom');
@@ -161,7 +185,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('returns empty array when complemento does not match customer', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '01' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer({ complemento: '01' }));
     const result = buildUseCase().execute({ documentNumber: '1234567', complemento: '1' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
@@ -170,7 +194,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('skips complemento validation when input complemento is empty', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '01' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer({ complemento: '01' }));
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     const result = buildUseCase().execute({ documentNumber: '1234567' });
     expect(result.data.salesOrders).toEqual([]);
@@ -178,7 +202,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('uses default pageSize of 10 if none provided', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     buildUseCase().execute({ documentNumber: '1234567' });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
@@ -188,7 +212,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   });
 
   it('allows custom pageSize', () => {
-    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     buildUseCase().execute({ documentNumber: '1234567', pageSize: 25 });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
