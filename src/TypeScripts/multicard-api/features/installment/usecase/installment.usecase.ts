@@ -10,17 +10,15 @@
  * invoice trandate, ONLY if the field is empty or null (idempotent).
  */
 import { type ApiResponse, failure, success } from '../../../shared/response';
-import { CUSTOMER_TYPE } from '../../../shared/customer-type';
+import { isValidCustomerType } from '../../../shared/customer-type';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
 import type { IInvoiceRepository } from '../../invoice/usecase/ports/invoice.repository.port';
 import {
   type IInstallmentInput,
   type IInstallmentResult,
   type InstallmentRecord,
-  buildAmortizationTable,
-  buildSimpleAmortization,
-  getNextMonthDate,
-  isMinorDayLimit,
+  buildInstallmentSchedule,
+  roundToCents,
 } from '../domain/installment.domain';
 import type { IInstallmentRepository } from './ports/installment.repository.port';
 
@@ -55,35 +53,22 @@ export class GenerateInstallments {
     if (input.paymentDay < 1 || input.paymentDay > 31) {
       return failure('paymentDay debe estar entre 1 y 31.');
     }
-    if (
-      input.customerType !== CUSTOMER_TYPE.NORMAL &&
-      input.customerType !== CUSTOMER_TYPE.EMPLOYEE &&
-      input.customerType !== CUSTOMER_TYPE.CORPORATE
-    ) {
+    if (!isValidCustomerType(input.customerType)) {
       return failure(`customerType inválido: ${input.customerType}. Debe ser '1', '2' o '3'.`);
     }
-
-    // Pick amortization strategy
-    const rows =
-      input.customerType === CUSTOMER_TYPE.EMPLOYEE
-        ? buildSimpleAmortization(input.amount, input.nroInstallment)
-        : buildAmortizationTable(input.amount, input.nroInstallment);
-
-    // Compute month offset based on paymentDay proximity
-    const monthOffset = isMinorDayLimit(input.paymentDay) ? 1 : 0;
 
     const createdIds: string[] = [];
     const results: IInstallmentResult[] = [];
 
     try {
-      for (const row of rows) {
-        const paymentDate = getNextMonthDate(input.paymentDay, row.nro + monthOffset);
+      const schedule = buildInstallmentSchedule(input);
 
+      for (const row of schedule) {
         const record: InstallmentRecord = {
           customerId: input.customerId,
           invoiceId: input.invoiceId,
           nro: row.nro,
-          paymentDate,
+          paymentDate: row.paymentDate,
           financedAmount: input.amount,
           capital: row.capital,
           adminCharge: row.interest,
@@ -96,8 +81,8 @@ export class GenerateInstallments {
         results.push({
           id,
           nro: row.nro,
-          paymentDate: paymentDate.toISOString(),
-          total: Number.parseFloat(row.fixedInstallment.toFixed(2)),
+          paymentDate: row.paymentDate.toISOString(),
+          total: roundToCents(row.fixedInstallment),
         });
       }
     } catch (_err) {

@@ -8,6 +8,8 @@ import {
   buildSimpleAmortization,
   getNextMonthDate,
   isMinorDayLimit,
+  buildInstallmentSchedule,
+  roundToCents,
   ANNUAL_INTEREST_RATE,
   DAYS_VALID_DATE_PAY,
 } from 'SuiteScripts/multicard-api/features/installment/domain/installment.domain';
@@ -212,5 +214,91 @@ describe('isMinorDayLimit', () => {
     // diff = (Feb 15 - Jan 25) = 21 days → > 20 → false
     const ref = new Date(2025, 0, 25); // Jan 25
     expect(isMinorDayLimit(15, ref)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// roundToCents
+// ---------------------------------------------------------------------------
+describe('roundToCents', () => {
+  it('keeps integers unchanged', () => {
+    expect(roundToCents(10)).toBe(10);
+  });
+
+  it('rounds to two decimals', () => {
+    expect(roundToCents(352.9188)).toBe(352.92);
+    expect(roundToCents(2.344)).toBe(2.34);
+  });
+
+  it('matches the toFixed(2) float behavior', () => {
+    expect(roundToCents(1.005)).toBe(Number.parseFloat((1.005).toFixed(2)));
+    expect(roundToCents(2.345)).toBe(Number.parseFloat((2.345).toFixed(2)));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildInstallmentSchedule
+// ---------------------------------------------------------------------------
+describe('buildInstallmentSchedule', () => {
+  const FAR = new Date(2025, 0, 25); // Jan 25 -> day 15 is 21 days away: no shift
+  const NEAR = new Date(2025, 0, 30); // Jan 30 -> day 15 is 16 days away: shift
+
+  it('uses simple (zero interest) amortization for EMPLOYEE', () => {
+    const rows = buildInstallmentSchedule(
+      { amount: 1000, nroInstallment: 3, customerType: '2', paymentDay: 15 },
+      FAR,
+    );
+    const expected = buildSimpleAmortization(1000, 3);
+    expect(rows.map((x) => x.interest)).toEqual([0, 0, 0]);
+    expect(rows.map((x) => x.fixedInstallment)).toEqual(expected.map((x) => x.fixedInstallment));
+    expect(rows.map((x) => x.capital)).toEqual(expected.map((x) => x.capital));
+  });
+
+  it.each(['1', '3'])('uses French amortization for customerType %s', (customerType) => {
+    const rows = buildInstallmentSchedule(
+      { amount: 1000, nroInstallment: 3, customerType, paymentDay: 15 },
+      FAR,
+    );
+    const expected = buildAmortizationTable(1000, 3);
+    expect(rows.map((x) => x.interest)).toEqual(expected.map((x) => x.interest));
+    expect(rows.map((x) => x.fixedInstallment)).toEqual(expected.map((x) => x.fixedInstallment));
+    expect(rows.map((x) => x.capital)).toEqual(expected.map((x) => x.capital));
+  });
+
+  it('numbers installments 1..n', () => {
+    const rows = buildInstallmentSchedule(
+      { amount: 1000, nroInstallment: 4, customerType: '1', paymentDay: 15 },
+      FAR,
+    );
+    expect(rows.map((x) => x.nro)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('does not shift the first installment when the payment day is far enough', () => {
+    expect(isMinorDayLimit(15, FAR)).toBe(false);
+    const rows = buildInstallmentSchedule(
+      { amount: 1000, nroInstallment: 2, customerType: '1', paymentDay: 15 },
+      FAR,
+    );
+    expect(rows[0].paymentDate).toEqual(new Date(2025, 1, 15));
+    expect(rows[1].paymentDate).toEqual(new Date(2025, 2, 15));
+  });
+
+  it('shifts one extra month when the payment day is too close', () => {
+    expect(isMinorDayLimit(15, NEAR)).toBe(true);
+    const rows = buildInstallmentSchedule(
+      { amount: 1000, nroInstallment: 2, customerType: '1', paymentDay: 15 },
+      NEAR,
+    );
+    expect(rows[0].paymentDate).toEqual(new Date(2025, 2, 15));
+    expect(rows[1].paymentDate).toEqual(new Date(2025, 3, 15));
+  });
+
+  it('throws when a payment day does not exist in a target month', () => {
+    expect(() =>
+      buildInstallmentSchedule(
+        { amount: 1000, nroInstallment: 1, customerType: '1', paymentDay: 31 },
+        new Date(2025, 0, 1),
+      ),
+    ).toThrow();
   });
 });

@@ -12,3 +12,8 @@ export const CUSTOMER_TYPE = {
 } as const;
 
 export type CustomerType = (typeof CUSTOMER_TYPE)[keyof typeof CUSTOMER_TYPE];
+
+/** Indica si un valor crudo es uno de los tipos de cliente conocidos ('1', '2' o '3'). */
+export function isValidCustomerType(value: string): value is CustomerType {
+  return Object.values<string>(CUSTOMER_TYPE).includes(value);
+}

@@ -5,7 +5,7 @@
  * Capa de dominio — installment. Lógica pura de amortización y fechas.
  * CERO imports de NetSuite. Totalmente unit-testeable sin stubs.
  */
-import type { CustomerType } from '../../../shared/customer-type';
+import { CUSTOMER_TYPE, type CustomerType } from '../../../shared/customer-type';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -61,6 +61,21 @@ export interface InstallmentSummaryResult {
   paymentDate: string;
   total: number;
   financedAmount: number;
+}
+
+export interface InstallmentScheduleRow {
+  nro: number;
+  paymentDate: Date;
+  capital: number;
+  interest: number;
+  fixedInstallment: number;
+}
+
+export interface InstallmentScheduleInput {
+  amount: number;
+  nroInstallment: number;
+  customerType: CustomerType | string;
+  paymentDay: number;
 }
 
 /**
@@ -210,4 +225,45 @@ export function isMinorDayLimit(dayOfMonth: number, refDate?: Date): boolean {
   const differenceInDays = (resultDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24);
 
   return differenceInDays <= DAYS_VALID_DATE_PAY;
+}
+
+// ---------------------------------------------------------------------------
+// Pure functions — installment schedule
+// ---------------------------------------------------------------------------
+
+/** Redondea a 2 decimales (centavos). */
+export function roundToCents(value: number): number {
+  return Number.parseFloat(value.toFixed(2));
+}
+
+/**
+ * Arma el cronograma de cuotas con sus fechas de pago.
+ *
+ * Reglas:
+ * - EMPLOYEE: amortización simple, sin interés.
+ * - Resto de tipos: amortización francesa.
+ * - Si el día de pago queda demasiado cerca de la fecha de referencia
+ *   (isMinorDayLimit), la primera cuota se mueve un mes adelante.
+ *
+ * @param refDate - Fecha de referencia (por defecto hoy). Inyectar en tests.
+ * @throws si el monto/cuotas son inválidos o el día de pago no existe en algún mes destino
+ */
+export function buildInstallmentSchedule(
+  input: InstallmentScheduleInput,
+  refDate?: Date,
+): InstallmentScheduleRow[] {
+  const rows =
+    input.customerType === CUSTOMER_TYPE.EMPLOYEE
+      ? buildSimpleAmortization(input.amount, input.nroInstallment)
+      : buildAmortizationTable(input.amount, input.nroInstallment);
+
+  const monthOffset = isMinorDayLimit(input.paymentDay, refDate) ? 1 : 0;
+
+  return rows.map((row) => ({
+    nro: row.nro,
+    paymentDate: getNextMonthDate(input.paymentDay, row.nro + monthOffset, refDate),
+    capital: row.capital,
+    interest: row.interest,
+    fixedInstallment: row.fixedInstallment,
+  }));
 }
