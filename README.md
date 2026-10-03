@@ -52,20 +52,36 @@ Full architecture guide lives in the `netsuite-clean-architecture` skill, shared
 
 Agent instructions for every tool live in [`AGENTS.md`](AGENTS.md).
 
-## RESTlet Naming Convention
+## Script Naming Convention
 
-Mandatory pattern for every RESTlet file in `suitescript/restlet/`:
+Every NetSuite script lives in `suitescript/<folder>/`, with one kebab-case folder per script type, and follows this file pattern:
 
 ```
-mc_rl_mcard_<acción>.ts
+mc_<prefix>_mcard_<action>.ts
 ```
 
 | Segment    | Meaning                                                                                     |
 | ---------- | ------------------------------------------------------------------------------------------- |
 | `mc`       | Multicenter (container project/client)                                                      |
-| `rl`       | RESTlet (NetSuite script type)                                                              |
+| `<prefix>` | NetSuite script type (see table below)                                                      |
 | `mcard`    | Multicard (functional module qualifier)                                                     |
-| `<acción>` | `verb_noun` describing the endpoint (e.g. `get_customer`, `validate_customer_for_purchase`) |
+| `<action>` | `verb_noun` describing what the script does (e.g. `get_customer`, `validate_customer_for_purchase`) |
+
+| Script type         | Prefix | Folder                 |
+| ------------------- | ------ | ---------------------- |
+| Client Script       | `cs`   | `client-script/`       |
+| User Event          | `ue`   | `user-event/`          |
+| Suitelet            | `sl`   | `suitelet/`            |
+| RESTlet             | `rl`   | `restlet/`             |
+| Portlet             | `pl`   | `portlet/`             |
+| Scheduled           | `ss`   | `scheduled/`           |
+| Map/Reduce          | `mr`   | `map-reduce/`          |
+| SuiteGL             | `gl`   | `suitegl/`             |
+| Workflow Action     | `wa`   | `workflow-action/`     |
+| Mass Update         | `mu`   | `mass-update/`         |
+| Bundle Installation | `bi`   | `bundle-installation/` |
+
+The SDF object of each script uses the same folder under `src/Objects/` and is named `customscript_mc_<prefix>_mcard_<name>.xml`.
 
 **Rule: 1 RESTlet per use case.** Each HTTP endpoint lives in its own file with its own composition root. No `?action=...` dispatching, no multi-action RESTlets.
 
@@ -76,17 +92,7 @@ mc_rl_mcard_<acción>.ts
 - URLs are self-documenting (no magic `?action=validate` param)
 - Blast radius is small — a bug in one endpoint does not affect the others
 
-**Current inventory:**
-
-| File                                            | Use case                      | HTTP | Params                                    |
-| ----------------------------------------------- | ----------------------------- | ---- | ----------------------------------------- |
-| `mc_rl_mcard_get_customer.ts`                   | `GetCustomer`                 | GET  | `documentNumber`                          |
-| `mc_rl_mcard_get_customer_by_id.ts`             | `GetCustomerById`             | GET  | `customerId`                              |
-| `mc_rl_mcard_validate_customer_for_purchase.ts` | `ValidateCustomerForPurchase` | GET  | `documentNumber`                          |
-| `mc_rl_mcard_generate_installments.ts`          | `GenerateInstallments`        | POST | body JSON (`InstallmentInput`)           |
-| `mc_rl_mcard_get_invoice.ts`                    | `GetInvoice`                  | GET  | `invoiceId`                               |
-| `mc_rl_mcard_get_sales_order_by_id.ts`          | `GetSalesOrderById`           | GET  | `salesOrderId`                            |
-| `mc_rl_mcard_get_sales_orders_by_document.ts`   | `GetSalesOrdersByDocument`    | GET  | `documentNumber`, `complemento?`, `page?` |
+The current endpoints, with their inputs and responses, are listed in the [Manual](MANUAL.md#5-referencia-de-endpoints).
 
 ## Build & Workflow
 

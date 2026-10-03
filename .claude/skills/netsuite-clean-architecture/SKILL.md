@@ -34,25 +34,27 @@ Raíz: `src/TypeScripts/multicard-api/`.
 | Objeto SDF del script | `src/Objects/<tipo>/` | `customscript_mc_<prefijo>_mcard_<nombre>.xml` |
 | Tests | `__test__/<feature>/` | `<accion>.usecase.test.js`, `<feature>.domain.test.js` |
 
-Header JSDoc: todos los módulos llevan `@NApiVersion 2.1`. Los RESTlets agregan `@NScriptType Restlet` y `@NModuleScope SameAccount`; el resto usa `@NModuleScope Public`.
+Header JSDoc: todos los módulos llevan `@NApiVersion 2.1`. Los scripts (entry points) agregan el `@NScriptType` de su tipo (ver tabla) y `@NModuleScope SameAccount`; los demás módulos usan `@NModuleScope Public`.
 
 ## Prefijos por tipo de script
 
-Todo script en `suitescript/` se nombra `mc_<prefijo>_mcard_<verb_noun>.ts`, con una subcarpeta por tipo de script nombrada como el tipo en minúsculas (por ejemplo, `suitescript/restlet/` y `src/Objects/restlet/`):
+Cada tipo de script tiene su subcarpeta en kebab-case, la misma en `suitescript/` y en `src/Objects/`. El prefijo va solo en el nombre del archivo: `suitescript/<carpeta>/mc_<prefijo>_mcard_<verb_noun>.ts` y `src/Objects/<carpeta>/customscript_mc_<prefijo>_mcard_<nombre>.xml`.
 
-| Prefijo | Tipo de script |
-| --- | --- |
-| `cs` | Client Script |
-| `ue` | User Event |
-| `sl` | Suitelet |
-| `rl` | RESTlet |
-| `pl` | Portlet |
-| `ss` | Scheduled |
-| `mr` | Map/Reduce |
-| `gl` | SuiteGL |
-| `wa` | Workflow Action |
-| `mu` | Mass Update |
-| `bi` | Bundle Installation |
+| Tipo de script | Prefijo | Carpeta | `@NScriptType` |
+| --- | --- | --- | --- |
+| Client Script | `cs` | `client-script/` | `ClientScript` |
+| User Event | `ue` | `user-event/` | `UserEventScript` |
+| Suitelet | `sl` | `suitelet/` | `Suitelet` |
+| RESTlet | `rl` | `restlet/` | `Restlet` |
+| Portlet | `pl` | `portlet/` | `Portlet` |
+| Scheduled | `ss` | `scheduled/` | `ScheduledScript` |
+| Map/Reduce | `mr` | `map-reduce/` | `MapReduceScript` |
+| SuiteGL | `gl` | `suitegl/` | `CustomGLPlugin` |
+| Workflow Action | `wa` | `workflow-action/` | `WorkflowActionScript` |
+| Mass Update | `mu` | `mass-update/` | `MassUpdateScript` |
+| Bundle Installation | `bi` | `bundle-installation/` | `BundleInstallationScript` |
+
+Ejemplo: un User Event vive en `suitescript/user-event/mc_ue_mcard_<verb_noun>.ts`.
 
 Cualquier tipo de script es un adaptador de entrada: solo traduce el evento de NetSuite a una llamada a un use case y actúa como composition root. Las reglas de negocio no van en el script.
 
