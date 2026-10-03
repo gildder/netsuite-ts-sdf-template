@@ -1,0 +1,75 @@
+name: Auto tag on release merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_PR: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Determine bump type from PR labels
+        id: bump
+        run: |
+          LABELS=$(gh pr view "$SOURCE_PR" --json labels --jq '.labels[].name')
+          if echo "$LABELS" | grep -qx "release:minor"; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          elif echo "$LABELS" | grep -qx "release:patch"; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Calculate next version
+        if: steps.bump.outputs.type != ''
+        id: version
+        run: |
+          LAST_TAG=$(git tag --list 'v*' | sort -V | tail -1)
+          LAST_TAG=${LAST_TAG:-v0.0.0}
+          VERSION=${LAST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          if [ "${{ steps.bump.outputs.type }}" = "minor" ]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+          echo "tag=v${MAJOR}.${MINOR}.${PATCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag and release
+        if: steps.bump.outputs.type != ''
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes
+
+      - name: Back-merge main into develop
+        run: |
+          git fetch origin main develop
+          if git merge-base --is-ancestor origin/develop origin/main; then
+            git push origin origin/main:refs/heads/develop
+            echo "develop avanzó por fast-forward a main."
+          else
+            EXISTING=$(gh pr list --base develop --head main --state open --json number --jq '.[0].number')
+            if [ -z "$EXISTING" ]; then
+              gh pr create --base develop --head main \
+                --title "Back-merge: main -> develop" \
+                --body "develop divergió de main tras el merge de #${SOURCE_PR}; no se pudo hacer fast-forward. Mergear para sincronizar."
+            fi
+          fi

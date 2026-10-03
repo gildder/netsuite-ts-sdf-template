@@ -1,0 +1,68 @@
+name: Auto PR develop -> main
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  open-pr:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      SOURCE_PR: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine release label from source branch
+        id: label
+        run: |
+          case "$HEAD_REF" in
+            hotfix/*|fix/*|refactor/*)
+              echo "label=release:patch" >> "$GITHUB_OUTPUT" ;;
+            feature/*|release/*) echo "label=release:minor" >> "$GITHUB_OUTPUT" ;;
+            main|chore/*|docs/*|test/*|ci/*|build/*)
+              echo "label=" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "label=" >> "$GITHUB_OUTPUT"
+              echo "unknown=true" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Warn on unrecognized branch prefix
+        if: steps.label.outputs.unknown == 'true'
+        run: |
+          gh pr comment "$SOURCE_PR" --body "⚠️ La rama \`$HEAD_REF\` no sigue el convenio de prefijos (\`feature/\`, \`release/\`, \`hotfix/\`, \`fix/\`, \`chore/\`, \`docs/\`, \`refactor/\`, \`test/\`, \`ci/\`, \`build/\`), así que este merge no dispara release automático a \`main\`."
+
+      - name: Ensure release labels exist
+        if: steps.label.outputs.label != ''
+        run: |
+          gh label create "release:patch" --color FBCA04 --force
+          gh label create "release:minor" --color 0E8A16 --force
+
+      - name: Create or update PR to main
+        if: steps.label.outputs.label != ''
+        run: |
+          EXISTING=$(gh pr list --base main --head develop --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --add-label "${{ steps.label.outputs.label }}"
+          else
+            gh pr create --base main --head develop \
+              --title "Release: develop -> main" \
+              --body "PR automático generado tras el merge de #${SOURCE_PR} (\`${HEAD_REF}\`) a develop." \
+              --label "${{ steps.label.outputs.label }}"
+          fi
+
+      - name: Delete source branch
+        if: env.HEAD_REF != 'develop' && env.HEAD_REF != 'main'
+        run: |
+          if git ls-remote --exit-code --heads origin "$HEAD_REF" > /dev/null; then
+            git push origin --delete "$HEAD_REF"
+          else
+            echo "La rama \"$HEAD_REF\" ya no existe en el remoto (ej. Dependabot la borra sola), se omite."
+          fi

@@ -1,0 +1,46 @@
+name: CI
+
+# Quality gate from AGENTS.md: lint, build and test must pass before merging.
+# Push to develop is included because the automatic develop -> main PR is
+# created with github.token, and GitHub does not trigger workflows for it.
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Reads the pnpm version from the packageManager field in package.json.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Lint before build: `pnpm build` rewrites the TS source with biome format,
+      # which would hide formatting errors committed in the PR.
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      # Tests run against the compiled JS, so they must run after the build.
+      - name: Test
+        run: pnpm test
