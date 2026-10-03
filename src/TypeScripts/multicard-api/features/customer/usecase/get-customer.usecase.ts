@@ -23,21 +23,17 @@ export class GetCustomer {
     const customer = this.customerRepository.findByDocumentNumber(documentNumber);
 
     if (!customer) {
-      return {
-        success: true,
-        data: { customer: null },
-        message: 'No se encontró el número de documento ingresado',
-        error: null,
-      };
+      return success<GetCustomerOutput>(
+        { customer: null },
+        'No se encontró el número de documento ingresado',
+      );
     }
 
     if (!customer.isPhoneValid()) {
-      return {
-        success: true,
-        data: { customer: null },
-        message: 'No tiene un número de teléfono móvil válido',
-        error: null,
-      };
+      return success<GetCustomerOutput>(
+        { customer: null },
+        'No tiene un número de teléfono móvil válido',
+      );
     }
 
     return success<GetCustomerOutput>({ customer: customer.toJSON() });

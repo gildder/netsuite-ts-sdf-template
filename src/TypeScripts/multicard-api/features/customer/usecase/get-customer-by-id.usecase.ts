@@ -23,12 +23,7 @@ export class GetCustomerById {
     const customer = this.customerRepo.findById(customerId);
 
     if (!customer) {
-      return {
-        success: true,
-        data: { customer: null },
-        message: 'No se encontró el cliente',
-        error: null,
-      };
+      return success<GetCustomerByIdOutput>({ customer: null }, 'No se encontró el cliente');
     }
 
     return success<GetCustomerByIdOutput>({ customer: customer.toDetailJSON() });

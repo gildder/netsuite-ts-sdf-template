@@ -26,12 +26,7 @@ export class GetInvoice {
     const invoice = this.invoiceRepo.findById(invoiceId);
 
     if (!invoice) {
-      return {
-        success: true,
-        data: { invoice: null },
-        message: 'No se encontró la factura',
-        error: null,
-      };
+      return success<GetInvoiceOutput>({ invoice: null }, 'No se encontró la factura');
     }
 
     return success<GetInvoiceOutput>({ invoice: invoice.toJSON() });

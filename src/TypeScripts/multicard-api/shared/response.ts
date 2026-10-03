@@ -10,10 +10,10 @@ export interface ApiResponse<T> {
   error: string | null;
 }
 
-export const success = <T>(data: T): ApiResponse<T> => ({
+export const success = <T>(data: T, message = ''): ApiResponse<T> => ({
   success: true,
   data,
-  message: '',
+  message,
   error: null,
 });
 
