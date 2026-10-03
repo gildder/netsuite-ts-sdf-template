@@ -29,6 +29,6 @@ export class GetInvoice {
       return success<GetInvoiceOutput>({ invoice: null }, 'No se encontró la factura');
     }
 
-    return success<GetInvoiceOutput>({ invoice: invoice.toJSON() });
+    return success<GetInvoiceOutput>({ invoice });
   }
 }

@@ -352,19 +352,7 @@ describe('GetSalesOrderSummary', () => {
       amount: 1500,
       cuf: 'CUF-123',
       customerId: '500',
-      toJSON: () => ({
-        id: '200',
-        date: '2026-01-15',
-        location: 'Sucursal Principal',
-        invoiceNumber: 'F-001',
-        customerNit: '1234567',
-        customerName: 'Juan Perez',
-        email: 'juan@example.com',
-        amount: 1500,
-        cuf: 'CUF-123',
-        customerId: '500',
-        cashRegister: 0,
-      }),
+      cashRegister: 0,
     });
     fakeCustomerRepo.findById.mockReturnValue({
       toDetailJSON: () => ({

@@ -10,7 +10,7 @@
 import * as log from 'N/log';
 import * as record from 'N/record';
 import * as search from 'N/search';
-import { Invoice } from '../domain/invoice.domain';
+import type { Invoice, SalesOrderFinancing } from '../domain/invoice.domain';
 import type { IInvoiceRepository } from '../usecase/ports/invoice.repository.port';
 
 // --- Identificadores NetSuite (invoice) ---
@@ -34,39 +34,38 @@ const FIELDS = {
 
 // Shape of the object returned by search.lookupFields for an invoice.
 interface InvoiceLookupResult {
-  internalid: Array<{ value: string }>;
-  trandate: string;
-  lastmodifieddate?: string;
-  location: Array<{ text: string }>;
-  custbody_sdb_numero_factura: string;
-  custbody_sdb_nit_cliente: string;
-  entity: Array<{ value: string; text: string }>;
-  custbody_sdb_csv_fa_custom_names: string;
-  custbody_sdb_bill_to_nit: string;
-  custbody_sdb_fa_custom_names: string;
-  custbody_sdb_cuf: string;
-  email: string;
-  total: string | number;
+  [FIELDS.INTERNAL_ID]: Array<{ value: string }>;
+  [FIELDS.TRAN_DATE]: string;
+  [FIELDS.LAST_MODIFIED]?: string;
+  [FIELDS.LOCATION]: Array<{ text: string }>;
+  [FIELDS.NUMERO_FACTURA]: string;
+  [FIELDS.NIT_CLIENTE]: string;
+  [FIELDS.ENTITY]: Array<{ value: string; text: string }>;
+  [FIELDS.CSV_FA_CUSTOM_NAMES]: string;
+  [FIELDS.BILL_TO_NIT]: string;
+  [FIELDS.FA_CUSTOM_NAMES]: string;
+  [FIELDS.CUF]: string;
+  [FIELDS.EMAIL]: string;
+  [FIELDS.TOTAL]: string | number;
 }
 
-const toInvoice = (result: InvoiceLookupResult): Invoice =>
-  new Invoice({
-    id: result.internalid[0].value,
-    date: result.trandate,
-    cashRegister: 0,
-    time: result.lastmodifieddate?.split(' ')[1],
-    location: result.location[0]?.text ?? '',
-    invoiceNumber: result.custbody_sdb_numero_factura,
-    customerNit: result.custbody_sdb_bill_to_nit || result.custbody_sdb_nit_cliente,
-    customerName:
-      result.custbody_sdb_fa_custom_names ||
-      result.entity[0]?.text.split(' ').slice(1).join(' ') ||
-      '',
-    email: result.email,
-    amount: result.total,
-    cuf: result.custbody_sdb_cuf,
-    customerId: result.entity[0]?.value ?? '',
-  });
+const toInvoice = (result: InvoiceLookupResult): Invoice => ({
+  id: result[FIELDS.INTERNAL_ID][0].value,
+  date: result[FIELDS.TRAN_DATE],
+  time: result[FIELDS.LAST_MODIFIED]?.split(' ')[1],
+  location: result[FIELDS.LOCATION][0]?.text ?? '',
+  invoiceNumber: result[FIELDS.NUMERO_FACTURA],
+  customerNit: result[FIELDS.BILL_TO_NIT] || result[FIELDS.NIT_CLIENTE],
+  customerName:
+    result[FIELDS.FA_CUSTOM_NAMES] ||
+    result[FIELDS.ENTITY][0]?.text.split(' ').slice(1).join(' ') ||
+    '',
+  email: result[FIELDS.EMAIL],
+  amount: result[FIELDS.TOTAL],
+  cuf: result[FIELDS.CUF],
+  customerId: result[FIELDS.ENTITY][0]?.value ?? '',
+  cashRegister: 0,
+});
 
 export class NetSuiteInvoiceRepository implements IInvoiceRepository {
   findById(invoiceId: string): Invoice | null {
@@ -124,9 +123,7 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
    * createdfrom y custbody_mc_monto_financiado de las facturas dadas.
    * On error: logs via N/log and THROWS (el use case decide la respuesta).
    */
-  findSalesOrderMapByIds(
-    invoiceIds: string[],
-  ): Map<string, { financedAmount: number; invoiceId: string }> {
+  findSalesOrderMapByIds(invoiceIds: string[]): Map<string, SalesOrderFinancing> {
     if (!invoiceIds || invoiceIds.length === 0) return new Map();
     try {
       const results = search
@@ -138,7 +135,7 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
         .run()
         .getRange({ start: 0, end: 1000 });
 
-      const map = new Map<string, { financedAmount: number; invoiceId: string }>();
+      const map = new Map<string, SalesOrderFinancing>();
       for (const r of results) {
         const soId = r.getValue(FIELDS.CREATED_FROM) as string;
         if (soId && !map.has(soId)) {

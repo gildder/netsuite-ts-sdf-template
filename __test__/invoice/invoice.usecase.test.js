@@ -104,9 +104,7 @@ describe('GetInvoice — not found', () => {
 
 describe('GetInvoice — happy path', () => {
   it('returns success with invoice JSON when repo finds the record', () => {
-    const fakeInvoiceObj = {
-      toJSON: () => ({ ...FAKE_INVOICE }),
-    };
+    const fakeInvoiceObj = { ...FAKE_INVOICE };
     const useCase = new GetInvoice(makeFakeRepo({ findById: () => fakeInvoiceObj }));
     const result = useCase.execute('12345');
 
@@ -116,9 +114,7 @@ describe('GetInvoice — happy path', () => {
   });
 
   it('invoice JSON has all expected fields', () => {
-    const fakeInvoiceObj = {
-      toJSON: () => ({ ...FAKE_INVOICE }),
-    };
+    const fakeInvoiceObj = { ...FAKE_INVOICE };
     const useCase = new GetInvoice(makeFakeRepo({ findById: () => fakeInvoiceObj }));
     const result = useCase.execute('12345');
     const inv = result.data.invoice;
@@ -139,7 +135,7 @@ describe('GetInvoice — happy path', () => {
 
   it('calls repo.findById with the provided invoiceId', () => {
     const calledWith = [];
-    const fakeInvoiceObj = { toJSON: () => ({ ...FAKE_INVOICE }) };
+    const fakeInvoiceObj = { ...FAKE_INVOICE };
     const repo = makeFakeRepo({
       findById: (id) => {
         calledWith.push(id);

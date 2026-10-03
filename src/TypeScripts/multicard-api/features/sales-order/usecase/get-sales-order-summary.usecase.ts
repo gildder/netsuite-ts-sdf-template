@@ -50,7 +50,7 @@ export class GetSalesOrderSummary {
 
     const summary: SalesOrderSummaryResponse = {
       salesOrderID: salesOrder.id,
-      invoice: toInvoiceSummary(invoice.toJSON()),
+      invoice: toInvoiceSummary(invoice),
       customer: toCustomerSummary(customer.toDetailJSON()),
       installments,
     };
