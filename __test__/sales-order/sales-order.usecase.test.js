@@ -105,10 +105,14 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('returns empty array when customer has no Multicard purchases', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
+    // Without a soIds filter the repository would return other customers' sales orders.
+    fakeSalesOrderRepo.findByCriteria.mockReturnValue([{ id: '999', tranId: 'SO-OTHER' }]);
     const result = buildUseCase().execute({ documentNumber: '1234567' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
+    expect(result.data.hasNextPage).toBe(false);
     expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).toHaveBeenCalledWith('500');
+    expect(fakeSalesOrderRepo.findByCriteria).not.toHaveBeenCalled();
   });
 
   it('does not query invoices when the customer has no invoice ids', () => {

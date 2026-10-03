@@ -48,6 +48,9 @@ const toSalesOrder = (result: search.Result): SalesOrder => {
 
 export class NetSuiteSalesOrderRepository implements ISalesOrderRepository {
   findByCriteria(criteria: SalesOrderSearchCriteria, soIds?: string[]): SalesOrder[] {
+    // Nunca buscar OVs sin el filtro por ids: la búsqueda no filtra por cliente y
+    // devolvería OVs de cualquier cliente.
+    if (!soIds || soIds.length === 0) return [];
     try {
       // NOTA: no se puede filtrar sales orders por custom fields del Customer
       // joined (custentity_*). El filtro Multicard por soIds (que ya viene del

@@ -63,6 +63,12 @@ export class GetSalesOrdersByCustomerDocument {
     }
     const soIds = Array.from(soMap.keys());
 
+    // Sin compras Multicard no hay OVs que mostrar. Buscar sin el filtro por ids
+    // devolvería OVs de otros clientes, porque la búsqueda no puede filtrar por cliente.
+    if (soIds.length === 0) {
+      return success<SalesOrderSearchResult>({ salesOrders: [], page, hasNextPage: false });
+    }
+
     // 4. Buscar las OVs filtradas (pageSize + 1 filas: look-ahead para hasNextPage)
     const salesOrders = this.salesOrderRepo.findByCriteria(
       {
