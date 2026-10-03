@@ -67,7 +67,7 @@ export class NetSuiteSalesOrderRepository implements ISalesOrderRepository {
       }
 
       const start = criteria.page * criteria.pageSize;
-      const end = start + criteria.pageSize;
+      const end = start + criteria.limit;
 
       const columns = Object.values(FIELDS).map((field) => {
         if (field === FIELDS.TRAN_DATE) {

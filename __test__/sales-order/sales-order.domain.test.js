@@ -4,9 +4,12 @@
  * Run: pnpm build && pnpm test
  */
 import {
+  normalizePaging,
   resolveFinancedAmount,
   toCustomerSummary,
   toInvoiceSummary,
+  toPage,
+  withFinancedAmounts,
 } from 'SuiteScripts/multicard-api/features/sales-order/domain/sales-order.domain';
 
 // ---------------------------------------------------------------------------
@@ -92,5 +95,69 @@ describe('resolveFinancedAmount', () => {
     const fallback = jest.fn().mockReturnValue(800);
     expect(resolveFinancedAmount(0, fallback)).toBe(800);
     expect(fallback).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizePaging
+// ---------------------------------------------------------------------------
+describe('normalizePaging', () => {
+  it('defaults to page 0 and pageSize 10 when undefined', () => {
+    expect(normalizePaging(undefined, undefined)).toEqual({ page: 0, pageSize: 10 });
+  });
+
+  it('clamps negative pages to 0', () => {
+    expect(normalizePaging(-5, 10).page).toBe(0);
+  });
+
+  it('floors fractional page and pageSize', () => {
+    expect(normalizePaging(2.9, 7.8)).toEqual({ page: 2, pageSize: 7 });
+  });
+
+  it('falls back to 10 when pageSize is 0, negative or undefined', () => {
+    expect(normalizePaging(0, 0).pageSize).toBe(10);
+    expect(normalizePaging(0, -3).pageSize).toBe(10);
+    expect(normalizePaging(0, undefined).pageSize).toBe(10);
+  });
+
+  it('keeps a custom pageSize', () => {
+    expect(normalizePaging(1, 25)).toEqual({ page: 1, pageSize: 25 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toPage
+// ---------------------------------------------------------------------------
+describe('toPage', () => {
+  it('returns all rows and no next page when there are fewer than pageSize', () => {
+    expect(toPage([1, 2], 3)).toEqual({ items: [1, 2], hasNextPage: false });
+  });
+
+  it('returns no next page when rows equal pageSize', () => {
+    expect(toPage([1, 2, 3], 3)).toEqual({ items: [1, 2, 3], hasNextPage: false });
+  });
+
+  it('trims the look-ahead row and flags a next page when rows exceed pageSize', () => {
+    expect(toPage([1, 2, 3, 4], 3)).toEqual({ items: [1, 2, 3], hasNextPage: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// withFinancedAmounts
+// ---------------------------------------------------------------------------
+describe('withFinancedAmounts', () => {
+  it('injects the financed amount by sales order id and defaults to 0 when missing', () => {
+    const amounts = new Map([['100', 1500]]);
+    const result = withFinancedAmounts(
+      [
+        { id: '100', financedAmount: 0 },
+        { id: '101', financedAmount: 9 },
+      ],
+      amounts,
+    );
+    expect(result).toEqual([
+      { id: '100', financedAmount: 1500 },
+      { id: '101', financedAmount: 0 },
+    ]);
   });
 });

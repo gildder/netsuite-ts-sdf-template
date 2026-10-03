@@ -33,11 +33,17 @@ export interface SalesOrderSearchCriteria {
   documentNumber: string;
   page: number;
   pageSize: number;
+  /**
+   * Cantidad de filas a traer a partir de page * pageSize. El caso de uso pide
+   * pageSize + 1 para saber si existe una página siguiente.
+   */
+  limit: number;
 }
 
 export interface SalesOrderSearchResult {
   salesOrders: SalesOrder[];
   page: number;
+  hasNextPage: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,4 +88,36 @@ export function toInvoiceSummary(invoice: InvoiceJSON): InvoiceSummary {
 export function toCustomerSummary(customer: CustomerDetailJSON): CustomerSummary {
   const { mobilePhone, paymentDay, ...rest } = customer;
   return { ...rest, phone: mobilePhone, paymentDay: String(paymentDay) };
+}
+
+/**
+ * Normaliza la paginación: page >= 0 (base 0) y pageSize > 0, con
+ * SALES_ORDERS_PAGE_SIZE como valor por defecto.
+ */
+export function normalizePaging(
+  page?: number,
+  pageSize?: number,
+): { page: number; pageSize: number } {
+  const normalizedPage = Math.max(0, Math.floor(page ?? 0));
+  const pageSizeInput = pageSize !== undefined ? Math.floor(pageSize) : 0;
+  return {
+    page: normalizedPage,
+    pageSize: pageSizeInput > 0 ? pageSizeInput : SALES_ORDERS_PAGE_SIZE,
+  };
+}
+
+/**
+ * Recorta las filas a pageSize. Si llegaron más filas que pageSize (la fila extra
+ * del look-ahead), existe una página siguiente.
+ */
+export function toPage<T>(rows: T[], pageSize: number): { items: T[]; hasNextPage: boolean } {
+  return { items: rows.slice(0, pageSize), hasNextPage: rows.length > pageSize };
+}
+
+/** Inyecta el monto financiado (por id de OV) en cada OV; 0 si no hay monto. */
+export function withFinancedAmounts(
+  salesOrders: SalesOrder[],
+  amounts: Map<string, number>,
+): SalesOrder[] {
+  return salesOrders.map((so) => ({ ...so, financedAmount: amounts.get(so.id) ?? 0 }));
 }

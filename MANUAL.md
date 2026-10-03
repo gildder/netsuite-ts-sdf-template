@@ -143,7 +143,7 @@ Inputs:
 - `complemento` opcional
 - `page` opcional, base 0
 
-Respuesta exitosa: devuelve `salesOrders` y `page`.
+Respuesta exitosa: devuelve `salesOrders`, `page` y `hasNextPage` (`true` si existe una página siguiente).
 
 ### POST — Generar Cuotas
 

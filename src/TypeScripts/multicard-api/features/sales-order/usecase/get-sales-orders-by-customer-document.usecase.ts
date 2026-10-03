@@ -10,9 +10,11 @@ import type { ICustomerRepository } from '../../customer/usecase/ports/customer.
 import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
 import type { IInvoiceRepository } from '../../invoice/usecase/ports/invoice.repository.port';
 import {
+  normalizePaging,
   resolveFinancedAmount,
-  SALES_ORDERS_PAGE_SIZE,
   type SalesOrderSearchResult,
+  toPage,
+  withFinancedAmounts,
 } from '../domain/sales-order.domain';
 import type { ISalesOrderRepository } from './ports/sales-order.repository.port';
 
@@ -37,20 +39,18 @@ export class GetSalesOrdersByCustomerDocument {
       return failure('documentNumber es requerido.');
     }
 
-    const page = Math.max(0, Math.floor(input.page ?? 0));
-    const pageSizeInput = input.pageSize !== undefined ? Math.floor(input.pageSize) : 0;
-    const pageSize = pageSizeInput > 0 ? pageSizeInput : SALES_ORDERS_PAGE_SIZE;
+    const { page, pageSize } = normalizePaging(input.page, input.pageSize);
 
     // 1. Buscar el cliente por número de documento
     const customer = this.customerRepo.findByDocumentNumber(documentNumber);
     if (!customer) {
-      return success<SalesOrderSearchResult>({ salesOrders: [], page });
+      return success<SalesOrderSearchResult>({ salesOrders: [], page, hasNextPage: false });
     }
 
     // 2. Validar el complemento a nivel de customer (no se puede filtrar sales
     // orders por custom fields del customer joined en NetSuite).
     if (!customer.matchesComplemento(input.complemento)) {
-      return success<SalesOrderSearchResult>({ salesOrders: [], page });
+      return success<SalesOrderSearchResult>({ salesOrders: [], page, hasNextPage: false });
     }
 
     // 3. Obtener los IDs de las OVs que tienen compras Multicard (y su monto financiado).
@@ -63,24 +63,26 @@ export class GetSalesOrdersByCustomerDocument {
     }
     const soIds = Array.from(soMap.keys());
 
-    // 4. Buscar las OVs filtradas
+    // 4. Buscar las OVs filtradas (pageSize + 1 filas: look-ahead para hasNextPage)
     const salesOrders = this.salesOrderRepo.findByCriteria(
       {
         documentNumber,
         page,
         pageSize,
+        limit: pageSize + 1,
       },
       soIds,
     );
 
-    // 5. Inyectar el financedAmount al resultado
-    const finalSalesOrders = salesOrders.map((so) => ({
-      ...so,
-      financedAmount: soMap.get(so.id) ?? 0,
-    }));
+    // 5. Recortar a la página y detectar si hay una siguiente
+    const { items, hasNextPage } = toPage(salesOrders, pageSize);
 
-    // 6. Retornar el listado paginado
-    return success<SalesOrderSearchResult>({ salesOrders: finalSalesOrders, page });
+    // 6. Inyectar el financedAmount y retornar el listado paginado
+    return success<SalesOrderSearchResult>({
+      salesOrders: withFinancedAmounts(items, soMap),
+      page,
+      hasNextPage,
+    });
   }
 
   /**

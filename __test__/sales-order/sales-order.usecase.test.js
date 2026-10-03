@@ -100,6 +100,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
     expect(result.data.page).toBe(0);
+    expect(result.data.hasNextPage).toBe(false);
     expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).not.toHaveBeenCalled();
   });
 
@@ -138,7 +139,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     // El complemento se valida contra el customer, no se pasa a findByCriteria
     expect(fakeInvoiceRepo.findSalesOrderMapByIds).toHaveBeenCalledWith(['I1', 'I2']);
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
-      { documentNumber: '1234567', page: 0, pageSize: 10 },
+      { documentNumber: '1234567', page: 0, pageSize: 10, limit: 11 },
       ['100', '101'],
     );
   });
@@ -189,6 +190,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     const result = buildUseCase().execute({ documentNumber: '1234567', complemento: '1' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
+    expect(result.data.hasNextPage).toBe(false);
     expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).not.toHaveBeenCalled();
     expect(fakeSalesOrderRepo.findByCriteria).not.toHaveBeenCalled();
   });
@@ -206,7 +208,7 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     buildUseCase().execute({ documentNumber: '1234567' });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
-      { documentNumber: '1234567', page: 0, pageSize: 10 },
+      { documentNumber: '1234567', page: 0, pageSize: 10, limit: 11 },
       ['100'],
     );
   });
@@ -216,9 +218,44 @@ describe('GetSalesOrdersByCustomerDocument', () => {
     givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
     buildUseCase().execute({ documentNumber: '1234567', pageSize: 25 });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
-      { documentNumber: '1234567', page: 0, pageSize: 25 },
+      { documentNumber: '1234567', page: 0, pageSize: 25, limit: 26 },
       ['100'],
     );
+  });
+
+  it('asks the repository for pageSize + 1 rows (look-ahead)', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    buildUseCase().execute({ documentNumber: '1234567', page: 2, pageSize: 5 });
+    expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 2, pageSize: 5, limit: 6 }),
+      ['100'],
+    );
+  });
+
+  it('returns hasNextPage true and only pageSize items when the repo returns pageSize + 1 rows', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    fakeSalesOrderRepo.findByCriteria.mockReturnValue([
+      { id: '100', financedAmount: 0 },
+      { id: '101', financedAmount: 0 },
+      { id: '102', financedAmount: 0 },
+    ]);
+    const result = buildUseCase().execute({ documentNumber: '1234567', pageSize: 2 });
+    expect(result.data.hasNextPage).toBe(true);
+    expect(result.data.salesOrders.map((so) => so.id)).toEqual(['100', '101']);
+  });
+
+  it('returns hasNextPage false when the repo returns pageSize rows or fewer', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue(makeDomainCustomer());
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    fakeSalesOrderRepo.findByCriteria.mockReturnValue([
+      { id: '100', financedAmount: 0 },
+      { id: '101', financedAmount: 0 },
+    ]);
+    const result = buildUseCase().execute({ documentNumber: '1234567', pageSize: 2 });
+    expect(result.data.hasNextPage).toBe(false);
+    expect(result.data.salesOrders).toHaveLength(2);
   });
 });
 
