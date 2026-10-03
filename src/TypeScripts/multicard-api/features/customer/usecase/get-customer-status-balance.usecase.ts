@@ -4,7 +4,7 @@
  *
  * Use case: GetCustomerStatusBalance — returns habilitado status and available balance for a customer.
  */
-import type { IInstallmentRepository } from '../../installment/usecase/installment.usecase';
+import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import type { ICustomerRepository } from './ports/customer.repository.port';
 

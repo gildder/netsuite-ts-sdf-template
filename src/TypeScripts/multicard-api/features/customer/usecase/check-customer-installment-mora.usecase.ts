@@ -10,7 +10,7 @@
  * no hay forma de chequearla sin hablar con installment. Documentado como
  * WARN en el compliance audit.
  */
-import type { IInstallmentRepository } from '../../installment/usecase/installment.usecase';
+import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
 import { type ApiResponse, success } from '../../../shared/response';
 
 interface CheckMoraOutput {

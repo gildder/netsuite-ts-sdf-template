@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope Public
  *
- * Casos de uso de installment. La interfaz del repositorio (puerto) vive acá,
- * owned by this feature. customer consumes it to check mora status.
+ * Casos de uso de installment. El puerto del repositorio vive en
+ * ./ports/installment.repository.port.ts.
  *
  * Side effect (post-success): when all installments are created OK,
  * custentity_mc_date_first_sale_multicard on the customer is set with the
@@ -12,33 +12,20 @@
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import { CUSTOMER_TYPE } from '../../../shared/customer-type';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
-import type { IInvoiceRepository } from '../../invoice/usecase/invoice.usecase';
+import type { IInvoiceRepository } from '../../invoice/usecase/ports/invoice.repository.port';
 import {
   type IInstallmentInput,
   type IInstallmentResult,
   type InstallmentRecord,
-  type InstallmentSummaryResult,
   buildAmortizationTable,
   buildSimpleAmortization,
   getNextMonthDate,
   isMinorDayLimit,
 } from '../domain/installment.domain';
-
-// ---------------------------------------------------------------------------
-// Port (driven side) — declared by the use case, implemented by infra
-// ---------------------------------------------------------------------------
-
-export interface IInstallmentRepository {
-  hasMora(customerId: string): boolean;
-  save(installment: InstallmentRecord): string;
-  delete(id: string): void;
-  findInvoiceIdsByCustomer(customerId: string): string[];
-  findInstallmentsByInvoiceId(invoiceId: string): InstallmentSummaryResult[];
-  findFinancedAmountByInvoiceId(invoiceId: string): number;
-}
+import type { IInstallmentRepository } from './ports/installment.repository.port';
 
 // Re-export domain input/result types for convenience
-export type { IInstallmentInput, IInstallmentResult, InstallmentSummaryResult };
+export type { IInstallmentInput, IInstallmentResult };
 
 // ---------------------------------------------------------------------------
 // Use case: GenerateInstallments

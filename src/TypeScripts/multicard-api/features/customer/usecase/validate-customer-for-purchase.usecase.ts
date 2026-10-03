@@ -4,7 +4,7 @@
  *
  * Use case: ValidateCustomerForPurchase — purchase eligibility rules.
  */
-import type { IInstallmentRepository } from '../../installment/usecase/installment.usecase';
+import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import {
   STATUS_DISABLED,

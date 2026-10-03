@@ -11,7 +11,7 @@ import * as log from 'N/log';
 import * as record from 'N/record';
 import * as search from 'N/search';
 import { Invoice } from '../domain/invoice.domain';
-import type { IInvoiceRepository } from '../usecase/invoice.usecase';
+import type { IInvoiceRepository } from '../usecase/ports/invoice.repository.port';
 
 // --- Identificadores NetSuite (invoice) ---
 const FIELDS = {

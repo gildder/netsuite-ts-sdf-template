@@ -4,17 +4,14 @@
  *
  * Capa de infraestructura — adaptador de persistencia NetSuite para installment.
  * ÚNICO archivo del feature con imports de N/*. Implementa el puerto
- * IInstallmentRepository declarado en installment.usecase.ts.
+ * IInstallmentRepository declarado en usecase/ports/installment.repository.port.ts.
  * Los identificadores de NetSuite del feature viven acá (RECORD + FIELDS + STATUS).
  */
 import * as log from 'N/log';
 import * as record from 'N/record';
 import * as search from 'N/search';
-import type {
-  IInstallmentRepository,
-  InstallmentSummaryResult,
-} from '../usecase/installment.usecase';
-import type { InstallmentRecord } from '../domain/installment.domain';
+import type { InstallmentRecord, InstallmentSummaryResult } from '../domain/installment.domain';
+import type { IInstallmentRepository } from '../usecase/ports/installment.repository.port';
 
 // --- Identificadores NetSuite (installment) ---
 const RECORD_INSTALLMENT = 'customrecord_sdb_siscred_cuota';

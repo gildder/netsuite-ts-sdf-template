@@ -3,20 +3,11 @@
  * @NModuleScope Public
  *
  * Capa de aplicación — casos de uso de invoice. Orquestan dominio + repositorio.
- * El puerto del repositorio (IInvoiceRepository) se declara acá.
+ * El puerto del repositorio vive en ./ports/invoice.repository.port.ts.
  */
 import { type ApiResponse, failure, success } from '../../../shared/response';
-import { type Invoice, type InvoiceJSON, isValidInvoiceId } from '../domain/invoice.domain';
-
-// --- Puerto (driven) ---
-export interface IInvoiceRepository {
-  findById(invoiceId: string): Invoice | null;
-  findBySalesOrderId(salesOrderId: string): Invoice | null;
-  findSalesOrderIdsByIds(invoiceIds: string[]): string[];
-  findSalesOrderMapByIds(
-    invoiceIds: string[],
-  ): Map<string, { financedAmount: number; invoiceId: string }>;
-}
+import { type InvoiceJSON, isValidInvoiceId } from '../domain/invoice.domain';
+import type { IInvoiceRepository } from './ports/invoice.repository.port';
 
 // --- Salidas ---
 interface GetInvoiceOutput {

@@ -7,8 +7,8 @@
  */
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
-import type { IInstallmentRepository } from '../../installment/usecase/installment.usecase';
-import type { IInvoiceRepository } from '../../invoice/usecase/invoice.usecase';
+import type { IInstallmentRepository } from '../../installment/usecase/ports/installment.repository.port';
+import type { IInvoiceRepository } from '../../invoice/usecase/ports/invoice.repository.port';
 import {
   resolveFinancedAmount,
   SALES_ORDERS_PAGE_SIZE,

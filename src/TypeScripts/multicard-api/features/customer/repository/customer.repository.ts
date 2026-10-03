@@ -4,7 +4,7 @@
  *
  * Capa de infraestructura — adaptador de persistencia NetSuite.
  * ÚNICO archivo del feature con imports de N/*. Implementa el puerto
- * ICustomerRepository declarado en customer.usecase.ts.
+ * ICustomerRepository declarado en usecase/ports/customer.repository.port.ts.
  * Los identificadores de NetSuite del feature viven acá (RECORD + FIELDS).
  */
 import * as log from 'N/log';
