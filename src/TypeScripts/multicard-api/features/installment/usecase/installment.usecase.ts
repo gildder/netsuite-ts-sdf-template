@@ -6,16 +6,16 @@
  * ./ports/installment.repository.port.ts.
  *
  * Side effect (post-success): when all installments are created OK,
- * custentity_mc_date_first_sale_multicard on the customer is set with the
- * invoice trandate, ONLY if the field is empty or null (idempotent).
+ * the customer's first Multicard sale date is set with the invoice date,
+ * ONLY if it is still empty (idempotent).
  */
 import { type ApiResponse, failure, success } from '../../../shared/response';
 import { isValidCustomerType } from '../../../shared/customer-type';
 import type { ICustomerRepository } from '../../customer/usecase/ports/customer.repository.port';
 import type { IInvoiceRepository } from '../../invoice/usecase/ports/invoice.repository.port';
 import {
-  type IInstallmentInput,
-  type IInstallmentResult,
+  type InstallmentInput,
+  type InstallmentResult,
   type InstallmentRecord,
   buildInstallmentSchedule,
   roundToCents,
@@ -23,7 +23,7 @@ import {
 import type { IInstallmentRepository } from './ports/installment.repository.port';
 
 // Re-export domain input/result types for convenience
-export type { IInstallmentInput, IInstallmentResult };
+export type { InstallmentInput, InstallmentResult };
 
 // ---------------------------------------------------------------------------
 // Use case: GenerateInstallments
@@ -36,7 +36,7 @@ export class GenerateInstallments {
     private readonly invoiceRepo: IInvoiceRepository,
   ) {}
 
-  execute(input: IInstallmentInput): ApiResponse<IInstallmentResult[]> {
+  execute(input: InstallmentInput): ApiResponse<InstallmentResult[]> {
     // Validate required fields
     if (!input.customerId) {
       return failure('customerId es requerido.');
@@ -58,7 +58,7 @@ export class GenerateInstallments {
     }
 
     const createdIds: string[] = [];
-    const results: IInstallmentResult[] = [];
+    const results: InstallmentResult[] = [];
 
     try {
       const schedule = buildInstallmentSchedule(input);
@@ -90,7 +90,7 @@ export class GenerateInstallments {
       return failure('No se pudieron generar las cuotas; se revirtieron las creadas.');
     }
 
-    // Side effect: set custentity_mc_date_first_sale_multicard if empty.
+    // Side effect: set the customer's first Multicard sale date if empty.
     // Runs AFTER the success path. Wrapped in try/catch — must not break the
     // main flow if it fails. The repository's setFirstSaleMulticardDateIfEmpty
     // logs internally via N/log.error on failure.
@@ -106,7 +106,7 @@ export class GenerateInstallments {
       // Best-effort side effect. Errors are logged inside the repository.
     }
 
-    return success<IInstallmentResult[]>(results);
+    return success<InstallmentResult[]>(results);
   }
 
   private compensate(ids: string[]): void {

@@ -104,6 +104,6 @@ classDiagram
 | Feature | Pieza que debería usar | Brecha a cerrar |
 | --- | --- | --- |
 | `customer` | Entidad | Resuelto: las reglas de compra, habilitación y complemento viven en `Customer` |
-| `installment` | Cálculo de dominio | Quitar el prefijo `I` de `IInstallmentInput` e `IInstallmentResult` |
+| `installment` | Cálculo de dominio | Resuelto: tipos de datos sin prefijo `I` (`InstallmentInput`, `InstallmentResult`) |
 | `invoice` | Entidad o tipo simple | Decidir si `Invoice` tendrá comportamiento propio (entidad) o si basta un tipo simple; hoy `InvoiceJSON` es idéntico a `InvoiceProps` |
 | `sales-order` | Read model | Resuelto: los tipos del resumen derivan de los `XxxJSON` de `customer`, `invoice` e `installment` |

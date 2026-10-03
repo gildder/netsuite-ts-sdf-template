@@ -83,7 +83,7 @@ mc_rl_mcard_<acción>.ts
 | `mc_rl_mcard_get_customer.ts`                   | `GetCustomer`                 | GET  | `documentNumber`                          |
 | `mc_rl_mcard_get_customer_by_id.ts`             | `GetCustomerById`             | GET  | `customerId`                              |
 | `mc_rl_mcard_validate_customer_for_purchase.ts` | `ValidateCustomerForPurchase` | GET  | `documentNumber`                          |
-| `mc_rl_mcard_generate_installments.ts`          | `GenerateInstallments`        | POST | body JSON (`IInstallmentInput`)           |
+| `mc_rl_mcard_generate_installments.ts`          | `GenerateInstallments`        | POST | body JSON (`InstallmentInput`)           |
 | `mc_rl_mcard_get_invoice.ts`                    | `GetInvoice`                  | GET  | `invoiceId`                               |
 | `mc_rl_mcard_get_sales_order_by_id.ts`          | `GetSalesOrderById`           | GET  | `salesOrderId`                            |
 | `mc_rl_mcard_get_sales_orders_by_document.ts`   | `GetSalesOrdersByDocument`    | GET  | `documentNumber`, `complemento?`, `page?` |

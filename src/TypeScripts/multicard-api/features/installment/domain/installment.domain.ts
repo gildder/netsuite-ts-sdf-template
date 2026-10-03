@@ -26,7 +26,7 @@ export interface AmortizationRow {
   remainingDebt: number;
 }
 
-export interface IInstallmentInput {
+export interface InstallmentInput {
   customerId: string;
   invoiceId: string;
   amount: number;
@@ -35,7 +35,7 @@ export interface IInstallmentInput {
   paymentDay: number;
 }
 
-export interface IInstallmentResult {
+export interface InstallmentResult {
   id: string;
   nro: number;
   paymentDate: string;

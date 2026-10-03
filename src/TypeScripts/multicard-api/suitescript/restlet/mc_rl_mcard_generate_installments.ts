@@ -6,7 +6,7 @@
  * Driving adapter + composition root: wires concrete dependencies,
  * injects them into the use case, and exposes the HTTP POST entry point.
  *
- * - POST body { IInstallmentInput } → GenerateInstallments
+ * - POST body { InstallmentInput } → GenerateInstallments
  */
 import * as log from 'N/log';
 import type { EntryPoints } from 'N/types';
@@ -14,7 +14,7 @@ import { NetSuiteInstallmentRepository } from '../../features/installment/reposi
 import { NetSuiteCustomerRepository } from '../../features/customer/repository/customer.repository';
 import { NetSuiteInvoiceRepository } from '../../features/invoice/repository/invoice.repository';
 import { GenerateInstallments } from '../../features/installment/usecase/installment.usecase';
-import type { IInstallmentInput } from '../../features/installment/usecase/installment.usecase';
+import type { InstallmentInput } from '../../features/installment/usecase/installment.usecase';
 import { failure } from '../../shared/response';
 
 const installmentRepo = new NetSuiteInstallmentRepository();
@@ -30,7 +30,7 @@ export const post: EntryPoints.RESTlet.post = (requestBody) => {
   try {
     const input = (
       typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody
-    ) as IInstallmentInput;
+    ) as InstallmentInput;
 
     const useCase = new GenerateInstallments(installmentRepo, customerRepo, invoiceRepo);
     const result = useCase.execute(input);
