@@ -154,6 +154,7 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
   /**
    * Devuelve un mapa de salesOrderId a financedAmount, leyendo
    * createdfrom y custbody_mc_monto_financiado de las facturas dadas.
+   * On error: logs via N/log and THROWS (el use case decide la respuesta).
    */
   findSalesOrderMapByIds(
     invoiceIds: string[],
@@ -188,7 +189,7 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
         title: 'NetSuiteInvoiceRepository.findSalesOrderMapByIds',
         details: (err as Error).message,
       });
-      return new Map();
+      throw err;
     }
   }
 }

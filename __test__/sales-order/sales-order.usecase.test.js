@@ -17,77 +17,87 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   const fakeCustomerRepo = {
     findByDocumentNumber: jest.fn().mockReturnValue(null),
   };
-  const fakeMulticardFilter = {
-    findSalesOrderIdsByCustomer: jest.fn().mockReturnValue(new Map()),
+  const fakeInstallmentRepo = {
+    hasMora: jest.fn().mockReturnValue(false),
+    save: jest.fn().mockReturnValue('1'),
+    delete: jest.fn(),
+    findInvoiceIdsByCustomer: jest.fn().mockReturnValue([]),
+    findInstallmentsByInvoiceId: jest.fn().mockReturnValue([]),
+    findFinancedAmountByInvoiceId: jest.fn().mockReturnValue(0),
+  };
+  const fakeInvoiceRepo = {
+    findById: jest.fn().mockReturnValue(null),
+    findBySalesOrderId: jest.fn().mockReturnValue(null),
+    findSalesOrderIdsByIds: jest.fn().mockReturnValue([]),
+    findSalesOrderMapByIds: jest.fn().mockReturnValue(new Map()),
+  };
+
+  const buildUseCase = () =>
+    new GetSalesOrdersByCustomerDocument(
+      fakeSalesOrderRepo,
+      fakeCustomerRepo,
+      fakeInstallmentRepo,
+      fakeInvoiceRepo,
+    );
+
+  // Configura la cadena cuota -> factura -> OV: soId -> { invoiceId, financedAmount }
+  const givenMulticardPurchases = (entries) => {
+    const map = new Map();
+    for (const [soId, details] of entries) map.set(soId, details);
+    fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReturnValue(
+      entries.map(([, details]) => details.invoiceId),
+    );
+    fakeInvoiceRepo.findSalesOrderMapByIds.mockReturnValue(map);
   };
 
   beforeEach(() => {
-    fakeSalesOrderRepo.findByCriteria.mockClear();
-    fakeCustomerRepo.findByDocumentNumber.mockClear();
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockClear();
+    fakeSalesOrderRepo.findByCriteria.mockReset().mockReturnValue([]);
+    fakeCustomerRepo.findByDocumentNumber.mockReset().mockReturnValue(null);
+    fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReset().mockReturnValue([]);
+    fakeInstallmentRepo.findFinancedAmountByInvoiceId.mockReset().mockReturnValue(0);
+    fakeInvoiceRepo.findSalesOrderMapByIds.mockReset().mockReturnValue(new Map());
   });
 
   it('returns failure when documentNumber is empty', () => {
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '' });
+    const result = buildUseCase().execute({ documentNumber: '' });
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/documentNumber es requerido/);
   });
 
   it('returns failure when documentNumber is whitespace', () => {
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '   ' });
+    const result = buildUseCase().execute({ documentNumber: '   ' });
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/documentNumber es requerido/);
   });
 
   it('returns empty array when customer is not found', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue(null);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '99999' });
+    const result = buildUseCase().execute({ documentNumber: '99999' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
     expect(result.data.page).toBe(0);
-    expect(fakeMulticardFilter.findSalesOrderIdsByCustomer).not.toHaveBeenCalled();
+    expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).not.toHaveBeenCalled();
   });
 
   it('returns empty array when customer has no Multicard purchases', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(new Map());
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '1234567' });
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
-    expect(fakeMulticardFilter.findSalesOrderIdsByCustomer).toHaveBeenCalledWith('500');
+    expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).toHaveBeenCalledWith('500');
+  });
+
+  it('does not query invoices when the customer has no invoice ids', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReturnValue([]);
+    buildUseCase().execute({ documentNumber: '1234567' });
+    expect(fakeInvoiceRepo.findSalesOrderMapByIds).not.toHaveBeenCalled();
   });
 
   it('clamps negative pages to 0', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    const map = new Map();
-    map.set('100', 1500);
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    usecase.execute({ documentNumber: '1234567', page: -5 });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    buildUseCase().execute({ documentNumber: '1234567', page: -5 });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
       expect.objectContaining({ documentNumber: '1234567', page: 0 }),
       ['100'],
@@ -96,63 +106,81 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('forwards multicard soIds to findByCriteria without complemento', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '1' });
-    const map = new Map();
-    map.set('100', 1500);
-    map.set('101', 2000);
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    usecase.execute({ documentNumber: '1234567', complemento: '1' });
+    givenMulticardPurchases([
+      ['100', { invoiceId: 'I1', financedAmount: 1500 }],
+      ['101', { invoiceId: 'I2', financedAmount: 2000 }],
+    ]);
+    buildUseCase().execute({ documentNumber: '1234567', complemento: '1' });
     // El complemento se valida contra el customer, no se pasa a findByCriteria
+    expect(fakeInvoiceRepo.findSalesOrderMapByIds).toHaveBeenCalledWith(['I1', 'I2']);
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
       { documentNumber: '1234567', page: 0, pageSize: 10 },
       ['100', '101'],
     );
   });
 
+  it('injects the invoice financedAmount into each sales order', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    fakeSalesOrderRepo.findByCriteria.mockReturnValue([{ id: '100', financedAmount: 0 }]);
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
+    expect(result.data.salesOrders).toEqual([{ id: '100', financedAmount: 1500 }]);
+    expect(fakeInstallmentRepo.findFinancedAmountByInvoiceId).not.toHaveBeenCalled();
+  });
+
+  it('uses the installment fallback amount when the invoice financedAmount is 0', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 0 }]]);
+    fakeInstallmentRepo.findFinancedAmountByInvoiceId.mockReturnValue(750);
+    fakeSalesOrderRepo.findByCriteria.mockReturnValue([{ id: '100', financedAmount: 0 }]);
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
+    expect(fakeInstallmentRepo.findFinancedAmountByInvoiceId).toHaveBeenCalledWith('I1');
+    expect(result.data.salesOrders).toEqual([{ id: '100', financedAmount: 750 }]);
+  });
+
+  it('returns failure when findInvoiceIdsByCustomer throws', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeInstallmentRepo.findInvoiceIdsByCustomer.mockImplementation(() => {
+      throw new Error('boom');
+    });
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/No se pudieron consultar las compras Multicard/);
+    expect(fakeSalesOrderRepo.findByCriteria).not.toHaveBeenCalled();
+  });
+
+  it('returns failure when findSalesOrderMapByIds throws', () => {
+    fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
+    fakeInstallmentRepo.findInvoiceIdsByCustomer.mockReturnValue(['I1']);
+    fakeInvoiceRepo.findSalesOrderMapByIds.mockImplementation(() => {
+      throw new Error('boom');
+    });
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/No se pudieron consultar las compras Multicard/);
+  });
+
   it('returns empty array when complemento does not match customer', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '01' });
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '1234567', complemento: '1' });
+    const result = buildUseCase().execute({ documentNumber: '1234567', complemento: '1' });
     expect(result.success).toBe(true);
     expect(result.data.salesOrders).toEqual([]);
-    expect(fakeMulticardFilter.findSalesOrderIdsByCustomer).not.toHaveBeenCalled();
+    expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).not.toHaveBeenCalled();
     expect(fakeSalesOrderRepo.findByCriteria).not.toHaveBeenCalled();
   });
 
   it('skips complemento validation when input complemento is empty', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500', complemento: '01' });
-    const map = new Map();
-    map.set('100', 1500);
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    const result = usecase.execute({ documentNumber: '1234567' });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    const result = buildUseCase().execute({ documentNumber: '1234567' });
     expect(result.data.salesOrders).toEqual([]);
-    expect(fakeMulticardFilter.findSalesOrderIdsByCustomer).toHaveBeenCalled();
+    expect(fakeInstallmentRepo.findInvoiceIdsByCustomer).toHaveBeenCalled();
   });
 
   it('uses default pageSize of 10 if none provided', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    const map = new Map();
-    map.set('100', 1500);
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    usecase.execute({ documentNumber: '1234567' });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    buildUseCase().execute({ documentNumber: '1234567' });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
       { documentNumber: '1234567', page: 0, pageSize: 10 },
       ['100'],
@@ -161,15 +189,8 @@ describe('GetSalesOrdersByCustomerDocument', () => {
 
   it('allows custom pageSize', () => {
     fakeCustomerRepo.findByDocumentNumber.mockReturnValue({ id: '500' });
-    const map = new Map();
-    map.set('100', 1500);
-    fakeMulticardFilter.findSalesOrderIdsByCustomer.mockReturnValue(map);
-    const usecase = new GetSalesOrdersByCustomerDocument(
-      fakeSalesOrderRepo,
-      fakeCustomerRepo,
-      fakeMulticardFilter,
-    );
-    usecase.execute({ documentNumber: '1234567', pageSize: 25 });
+    givenMulticardPurchases([['100', { invoiceId: 'I1', financedAmount: 1500 }]]);
+    buildUseCase().execute({ documentNumber: '1234567', pageSize: 25 });
     expect(fakeSalesOrderRepo.findByCriteria).toHaveBeenCalledWith(
       { documentNumber: '1234567', page: 0, pageSize: 25 },
       ['100'],

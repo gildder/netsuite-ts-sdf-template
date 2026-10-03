@@ -13,7 +13,6 @@ import type { EntryPoints } from 'N/types';
 import { NetSuiteCustomerRepository } from '../../features/customer/repository/customer.repository';
 import { NetSuiteInvoiceRepository } from '../../features/invoice/repository/invoice.repository';
 import { NetSuiteInstallmentRepository } from '../../features/installment/repository/installment.repository';
-import { NetSuiteMulticardSalesOrderFilter } from '../../features/sales-order/repository/multicard-sales-order-filter.repository';
 import { NetSuiteSalesOrderRepository } from '../../features/sales-order/repository/sales-order.repository';
 import { GetSalesOrdersByCustomerDocument } from '../../features/sales-order/usecase/get-sales-orders-by-customer-document.usecase';
 import { failure } from '../../shared/response';
@@ -22,7 +21,6 @@ const customerRepo = new NetSuiteCustomerRepository();
 const invoiceRepo = new NetSuiteInvoiceRepository();
 const installmentRepo = new NetSuiteInstallmentRepository();
 const salesOrderRepo = new NetSuiteSalesOrderRepository();
-const multicardFilter = new NetSuiteMulticardSalesOrderFilter(installmentRepo, invoiceRepo);
 
 export const get: EntryPoints.RESTlet.get = (requestParams) => {
   log.audit({
@@ -44,7 +42,8 @@ export const get: EntryPoints.RESTlet.get = (requestParams) => {
   const useCase = new GetSalesOrdersByCustomerDocument(
     salesOrderRepo,
     customerRepo,
-    multicardFilter,
+    installmentRepo,
+    invoiceRepo,
   );
   return JSON.stringify(
     useCase.execute({

@@ -4,6 +4,7 @@
  * Run: pnpm build && pnpm test
  */
 import {
+  resolveFinancedAmount,
   toCustomerSummary,
   toInvoiceSummary,
 } from 'SuiteScripts/multicard-api/features/sales-order/domain/sales-order.domain';
@@ -74,5 +75,22 @@ describe('toCustomerSummary', () => {
     });
     expect(result).not.toHaveProperty('mobilePhone');
     expect(typeof result.paymentDay).toBe('string');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveFinancedAmount
+// ---------------------------------------------------------------------------
+describe('resolveFinancedAmount', () => {
+  it('returns the invoice amount when greater than 0 without calling the fallback', () => {
+    const fallback = jest.fn().mockReturnValue(999);
+    expect(resolveFinancedAmount(1500, fallback)).toBe(1500);
+    expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it('calls the fallback and returns its value when the invoice amount is 0', () => {
+    const fallback = jest.fn().mockReturnValue(800);
+    expect(resolveFinancedAmount(0, fallback)).toBe(800);
+    expect(fallback).toHaveBeenCalledTimes(1);
   });
 });

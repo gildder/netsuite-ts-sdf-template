@@ -63,6 +63,17 @@ export interface SalesOrderSummaryResponse {
 // Pure functions — projections
 // ---------------------------------------------------------------------------
 
+/**
+ * El monto financiado de la factura tiene prioridad; si es 0 se usa el de las cuotas.
+ * El fallback es perezoso: solo se evalúa cuando hace falta.
+ */
+export function resolveFinancedAmount(
+  invoiceFinancedAmount: number,
+  getInstallmentFinancedAmount: () => number,
+): number {
+  return invoiceFinancedAmount > 0 ? invoiceFinancedAmount : getInstallmentFinancedAmount();
+}
+
 export function toInvoiceSummary(invoice: InvoiceJSON): InvoiceSummary {
   const { time: _time, ...summary } = invoice;
   return summary;

@@ -141,8 +141,8 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
 
   /**
    * Devuelve los invoiceIds únicos asociados a las cuotas activas de un cliente.
-   * Usado por el filtro Multicard: customer → installments → invoiceIds → invoices → SO ids.
-   * On error: logs via N/log and returns empty array.
+   * Usado por GetSalesOrdersByCustomerDocument: customer → installments → invoiceIds → invoices → SO ids.
+   * On error: logs via N/log and THROWS (el use case decide la respuesta).
    */
   findInvoiceIdsByCustomer(customerId: string): string[] {
     try {
@@ -170,7 +170,7 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
         title: `NetSuiteInstallmentRepository.findInvoiceIdsByCustomer customerId: ${customerId}`,
         details: (err as Error).message,
       });
-      return [];
+      throw err;
     }
   }
 
@@ -218,6 +218,7 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
 
   /**
    * Obtiene el monto financiado de cualquiera de las cuotas asociadas a una factura.
+   * On error: logs via N/log and THROWS (el use case decide la respuesta).
    */
   findFinancedAmountByInvoiceId(invoiceId: string): number {
     try {
@@ -243,7 +244,7 @@ export class NetSuiteInstallmentRepository implements IInstallmentRepository {
         title: `NetSuiteInstallmentRepository.findFinancedAmountByInvoiceId invoiceId: ${invoiceId}`,
         details: (err as Error).message,
       });
-      return 0;
+      throw err;
     }
   }
 }
