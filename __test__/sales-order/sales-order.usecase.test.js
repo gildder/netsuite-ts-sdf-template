@@ -52,7 +52,6 @@ describe('GetSalesOrdersByCustomerDocument', () => {
   const fakeInvoiceRepo = {
     findById: jest.fn().mockReturnValue(null),
     findBySalesOrderId: jest.fn().mockReturnValue(null),
-    findSalesOrderIdsByIds: jest.fn().mockReturnValue([]),
     findSalesOrderMapByIds: jest.fn().mockReturnValue(new Map()),
   };
 
@@ -267,7 +266,6 @@ describe('GetSalesOrderSummary', () => {
   const fakeInvoiceRepo = {
     findById: jest.fn().mockReturnValue(null),
     findBySalesOrderId: jest.fn().mockReturnValue(null),
-    findSalesOrderIdsByIds: jest.fn().mockReturnValue([]),
   };
   const fakeCustomerRepo = {
     findById: jest.fn().mockReturnValue(null),

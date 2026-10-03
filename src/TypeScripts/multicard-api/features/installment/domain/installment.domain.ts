@@ -14,11 +14,6 @@ import { CUSTOMER_TYPE, type CustomerType } from '../../../shared/customer-type'
 export const ANNUAL_INTEREST_RATE = 34.92 as const;
 export const DAYS_VALID_DATE_PAY = 20 as const;
 
-export const INSTALLMENT_STATUS = {
-  ACTIVE: '1',
-  MORA: '4',
-} as const;
-
 // ---------------------------------------------------------------------------
 // Domain types
 // ---------------------------------------------------------------------------
@@ -38,14 +33,6 @@ export interface IInstallmentInput {
   customerType: CustomerType;
   nroInstallment: number;
   paymentDay: number;
-}
-
-export interface IInstallmentCalculated {
-  nro: number;
-  fixedInstallment: number;
-  interest: number;
-  capital: number;
-  remainingDebt: number;
 }
 
 export interface IInstallmentResult {

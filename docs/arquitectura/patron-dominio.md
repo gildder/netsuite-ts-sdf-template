@@ -103,7 +103,7 @@ classDiagram
 
 | Feature | Pieza que debería usar | Brecha a cerrar |
 | --- | --- | --- |
-| `customer` | Entidad | Mover al dominio las reglas que hoy están en los casos de uso (comparación de complemento, textos de "Habilitado") |
-| `installment` | Cálculo de dominio | Quitar el prefijo `I` de los tipos de datos, eliminar `IInstallmentCalculated` (duplica `AmortizationRow`) y retirar `INSTALLMENT_STATUS` si sigue sin usarse |
+| `customer` | Entidad | Resuelto: las reglas de compra, habilitación y complemento viven en `Customer` |
+| `installment` | Cálculo de dominio | Quitar el prefijo `I` de `IInstallmentInput` e `IInstallmentResult` |
 | `invoice` | Entidad o tipo simple | Decidir si `Invoice` tendrá comportamiento propio (entidad) o si basta un tipo simple; hoy `InvoiceJSON` es idéntico a `InvoiceProps` |
-| `sales-order` | Read model | Reutilizar los `XxxJSON` de `customer`, `invoice` e `installment` en lugar de redefinir `InvoiceSummary`, `CustomerSummary` e `InstallmentSummary` |
+| `sales-order` | Read model | Resuelto: los tipos del resumen derivan de los `XxxJSON` de `customer`, `invoice` e `installment` |

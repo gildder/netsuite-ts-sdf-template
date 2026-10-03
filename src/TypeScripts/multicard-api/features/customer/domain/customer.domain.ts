@@ -199,10 +199,6 @@ export class Customer {
     return this.props.contractSigned && this.props.insuranceSigned;
   }
 
-  belongsToSubsidiary(subsidiaryId: number): boolean {
-    return this.props.subsidiary === subsidiaryId;
-  }
-
   /** El complemento vacío no filtra; si viene informado debe coincidir (ignora espacios). */
   matchesComplemento(complemento?: string): boolean {
     const trimmed = (complemento ?? '').trim();

@@ -9,7 +9,6 @@ import type { Invoice } from '../../domain/invoice.domain';
 export interface IInvoiceRepository {
   findById(invoiceId: string): Invoice | null;
   findBySalesOrderId(salesOrderId: string): Invoice | null;
-  findSalesOrderIdsByIds(invoiceIds: string[]): string[];
   findSalesOrderMapByIds(
     invoiceIds: string[],
   ): Map<string, { financedAmount: number; invoiceId: string }>;

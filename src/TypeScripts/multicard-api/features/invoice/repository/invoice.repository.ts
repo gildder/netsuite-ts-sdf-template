@@ -120,38 +120,6 @@ export class NetSuiteInvoiceRepository implements IInvoiceRepository {
   }
 
   /**
-   * Devuelve los SO ids únicos asociados a las facturas recibidas,
-   * leídos desde el campo `createdfrom`. Usado por el filtro Multicard.
-   * Filtra valores vacíos/null. On error: logs via N/log and returns empty array.
-   */
-  findSalesOrderIdsByIds(invoiceIds: string[]): string[] {
-    if (!invoiceIds || invoiceIds.length === 0) return [];
-    try {
-      const results = search
-        .create({
-          type: record.Type.INVOICE,
-          filters: [[FIELDS.INTERNAL_ID, 'anyof', invoiceIds]] as unknown as search.Filter[],
-          columns: [FIELDS.CREATED_FROM],
-        })
-        .run()
-        .getRange({ start: 0, end: 1000 });
-
-      const uniqueSoIds = new Set<string>();
-      for (const r of results) {
-        const soId = r.getValue(FIELDS.CREATED_FROM) as string;
-        if (soId) uniqueSoIds.add(soId);
-      }
-      return Array.from(uniqueSoIds);
-    } catch (err) {
-      log.error({
-        title: 'NetSuiteInvoiceRepository.findSalesOrderIdsByIds',
-        details: (err as Error).message,
-      });
-      return [];
-    }
-  }
-
-  /**
    * Devuelve un mapa de salesOrderId a financedAmount, leyendo
    * createdfrom y custbody_mc_monto_financiado de las facturas dadas.
    * On error: logs via N/log and THROWS (el use case decide la respuesta).
