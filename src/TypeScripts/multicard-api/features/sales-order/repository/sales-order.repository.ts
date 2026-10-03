@@ -10,7 +10,7 @@
 import * as log from 'N/log';
 import * as record from 'N/record';
 import * as search from 'N/search';
-import { type SalesOrder, type SalesOrderSearchCriteria } from '../domain/sales-order.domain';
+import type { SalesOrder, SalesOrderSearchCriteria } from '../domain/sales-order.domain';
 import type { ISalesOrderRepository } from '../usecase/ports/sales-order.repository.port';
 
 // --- Identificadores NetSuite (sales-order) ---

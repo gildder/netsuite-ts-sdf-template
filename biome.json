@@ -2,7 +2,7 @@
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
     "include": ["**/*.ts", "**/*.json", "src/FileCabinet/SuiteScripts/multicard-api/**/*.js"],
-    "ignore": ["node_modules/**"]
+    "ignore": ["node_modules/**", "postman/**"]
   },
   "overrides": [
     {
